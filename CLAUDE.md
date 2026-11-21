@@ -22,7 +22,7 @@ A free, open-source job search tracker that people download and run on their own
 
 - `npm start` builds once, then serves `dist/` and the API on `http://localhost:4321`.
 - `npm run dev` runs the server on 4322 and Astro's live-reload page on 4321, which proxies `/api` to the server.
-- Needs Node 22.13 or newer (`node:sqlite`). Scripts pass `--disable-warning=ExperimentalWarning` to hide its notice.
+- Needs Node 22.23.4 or newer (Astro's minimum; `node:sqlite` itself needs 22.13). Scripts pass `--disable-warning=ExperimentalWarning` to hide its notice.
 
 ## Accessibility
 

@@ -16,7 +16,7 @@ jobs:
     strategy:
       matrix:
         # The oldest supported Node, and the recommended one.
-        node-version: [22.13, 24]
+        node-version: [22.23.4, 24]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4

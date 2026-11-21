@@ -47,7 +47,7 @@ A version you've sent somewhere can't be deleted, so you always have a record of
 
 ## Install and run
 
-You need [Node.js](https://nodejs.org) **22.13 or newer** (24 is recommended) and [Git](https://git-scm.com).
+You need [Node.js](https://nodejs.org) **22.23.4 or newer** (24 is recommended) and [Git](https://git-scm.com).
 
 ```bash
 git clone https://github.com/natalia-builds/search-pipeline-tracker-app.git
