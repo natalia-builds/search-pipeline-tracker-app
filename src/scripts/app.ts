@@ -5,6 +5,7 @@ import { lineDiff, wordDiff } from "../lib/diff";
 import { boldedMetrics, bulletCount, esc, plain, renderMarkdown, wordCount } from "../lib/markdown";
 import { sampleLibrary } from "../lib/sample";
 import { openServerStore } from "../lib/serverStore";
+import { isStalePageError, STALE_PAGE_MESSAGE } from "../lib/stale";
 import { backupFilename, exportBackup, loadLibrary, parseBackup, saveLibrary, STORAGE_KEY, type KeyValueStore } from "../lib/storage";
 import { BONUS_OPTIONS, emptyLibrary, isActive, MAX_PAGE_LIMIT, STATUSES, type Application, type Contact, type Library, type Settings } from "../lib/types";
 
@@ -95,6 +96,8 @@ const S = {
   saveError: null as string | null,
   /** Why the local server couldn't be reached, if it couldn't. */
   serverError: opened.error,
+  /** Set when a part of the app failed to load because the app was updated after this page opened. */
+  outOfDate: false,
 };
 if (!SECTIONS.includes(S.section)) S.section = "resume";
 // If saved data couldn't be read, keep a copy under another key before anything can overwrite it.
@@ -228,6 +231,7 @@ function bannersHtml() {
     );
   if (S.saveError) out.push(`<div class="banner danger" role="alert"><span>${esc(S.saveError)}</span><button class="btn small" data-act="backup">Download backup</button></div>`);
   if (!store) out.push(`<div class="banner danger" role="alert"><span>${esc(S.serverError || "The tracker can't save your data right now.")}</span></div>`);
+  if (S.outOfDate) out.push(`<div class="banner danger" role="alert"><span>${esc(STALE_PAGE_MESSAGE)}</span><button class="btn small" data-act="reload">Reload page</button></div>`);
   const stale = !lib.lastBackupAt || daysSince(lib.lastBackupAt.slice(0, 10)) >= 14;
   if (hasData() && stale && S.section !== "settings")
     out.push(
@@ -748,7 +752,12 @@ async function downloadPdf(btn: HTMLButtonElement, vid: string) {
         : `Too long for ${pages(limit)} at a readable size, so the PDF is ${pages(res.pages)}. Trim a bullet or two, or raise the page limit, and try again.`,
     );
   } catch (err) {
-    announce("Couldn't build the PDF: " + (err as Error).message);
+    if (isStalePageError(err)) {
+      // Not a real PDF problem: the app was updated after this page opened. Reloading fixes it.
+      S.outOfDate = true;
+      announce(STALE_PAGE_MESSAGE);
+      render('[data-act="reload"]');
+    } else announce("Couldn't build the PDF: " + (err as Error).message);
   } finally {
     btn.disabled = false;
   }
@@ -1084,6 +1093,10 @@ function handleAction(el: HTMLElement) {
     }
     case "backup":
       return downloadBackup();
+    case "reload":
+      // If a change is still on its way to the disk, the browser asks before leaving (see beforeunload).
+      location.reload();
+      return;
     case "rawcopy":
       if (loaded.raw) download(new Blob([loaded.raw], { type: "application/json" }), "job-search-unreadable-data.json");
       return;
