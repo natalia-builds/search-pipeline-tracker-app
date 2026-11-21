@@ -162,3 +162,7 @@ data/
 *.sqlite
 *.sqlite3
 backup*.json
+
+# editor/tool settings with paths on one person's machine
+.claude/
+.astro/
