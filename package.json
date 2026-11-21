@@ -1,0 +1,24 @@
+{
+  "name": "search-pipeline-tracker-app",
+  "version": "0.0.1",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "engines": {
+    "node": ">=22.13"
+  },
+  "scripts": {
+    "start": "node --disable-warning=ExperimentalWarning scripts/start.mjs",
+    "dev": "node scripts/dev.mjs",
+    "build": "astro build",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "astro": "^7.4.4",
+    "jspdf": "^2.5.1"
+  },
+  "devDependencies": {
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.5"
+  }
+}
