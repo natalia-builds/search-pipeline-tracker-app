@@ -1,53 +1,93 @@
-# Search Pipeline & Tracker (local app)
+# Search Pipeline & Tracker
 
-A free, private tool for running a job search that **runs on your own computer**. Keep every version of your resume, see exactly which version went to each company and each person, track where every application stands, and keep a history of your LinkedIn headline.
+A free, open-source job search tracker that runs on your own computer. It keeps every version of your resume, shows which version went to each company and each person, tracks where every application stands, and saves a history of your LinkedIn headline. Your data lives in one file on your machine: no account, no cloud, no tracking.
 
-Your data is saved in a single file on your computer. There's no account, no cloud, no tracking, and nothing leaves your machine.
+**Try it in your browser, no install:** [the browser version](https://natalia-builds.github.io/search-pipeline-and-tracker/) (the same tracker, with data kept in your browser instead of a file)
 
-> There's also a [browser-only version](https://natalia-builds.github.io/search-pipeline-and-tracker/) that needs no install and keeps data in your browser. This app is the same tracker, but your data lives in a file you control instead of browser storage, so clearing your browser can't erase it.
+**Download and run it on your computer:** [latest release](https://github.com/natalia-builds/search-pipeline-tracker-app/releases/latest), then the [install steps](#install-and-run)
 
 ## Contents
 
-- [What it does](#what-it-does)
+- [Status](#status)
+- [Who it's for and the problem it solves](#who-its-for-and-the-problem-it-solves)
+- [What it does today](#what-it-does-today)
+- [Design decisions and tradeoffs](#design-decisions-and-tradeoffs)
+- [Roadmap](#roadmap)
+- [Limitations and known gaps](#limitations-and-known-gaps)
 - [Install and run](#install-and-run)
-- [Your data and backups](#your-data-and-backups)
-- [Moving over from the browser version](#moving-over-from-the-browser-version)
-- [Formatting your resume](#formatting-your-resume)
-- [Limits](#limits)
-- [Accessibility](#accessibility)
-- [Questions, bugs and ideas](#questions-bugs-and-ideas)
+  - [First steps](#first-steps)
+  - [Your data and backups](#your-data-and-backups)
+  - [Moving over from the browser version](#moving-over-from-the-browser-version)
 - [For developers](#for-developers)
-- [License](#license)
+  - [Run it for development](#run-it-for-development)
+  - [Where things live](#where-things-live)
+  - [Contributing](#contributing)
+  - [License](#license)
 
-## What it does
+## Status
 
-**Resume**
-- Save a new version every time you tailor your resume, with a note about what changed.
-- Compare any two versions line by line.
-- Download a PDF that fits the page limit you choose (any length, or 1 to 4 pages). The PDF is real text, so applicant tracking systems can read it.
-- Copy your resume as plain text for application forms.
-- Run checks you set up: words every version must include, the years of experience you claim, team sizes, words to avoid, and em dashes.
+**Version 0.1.0, the first release of the local app.** It works end to end and has automated tests for the server (including its security checks), the browser-side saving, and the resume logic. The screens come from the [browser version](https://github.com/natalia-builds/search-pipeline-and-tracker), which was released first. This version changes where the data lives. So far it has been run on macOS only. The automated tests also run on Linux.
 
-**Applications**
-- Track each role from Interested through Applied, Screening, Interviewing, and Offer. When a role ends, mark it Rejected (the company passed), Withdrawn (you pulled out), or Closed (filled, paused, or went quiet). Ended roles leave the Active count.
-- Record the resume version you sent, the pay range, the work setup, the next step and its date, a referral, and notes.
-- Get flags for overdue next steps, no posted pay range, pay below your target, and work setups you want to avoid.
+## Who it's for and the problem it solves
 
-**Contacts**
-- Record who you shared your resume with outside an application, such as a former colleague passing it along.
-- See which version each person has, and get a warning when they have an older one.
-- Set follow-up dates.
+Anyone running a job search who tailors their resume for each role. A search produces many versions of a resume, many applications, and people who passed the resume along. It gets hard to say which version a company, or a former colleague, actually has. A spreadsheet can list where you applied, but it can't hold each version or compare them. Hosted trackers keep your resume and your contacts' details on someone else's servers.
 
-**LinkedIn headline**
-- Keep every headline you've used, with when and why it changed.
-- Count characters against LinkedIn's 220-character limit.
-- Check that any numbers in your headline match your current resume.
+The tracker is built around four things:
+
+1. **Resume versions:** save a new version each time you tailor it, with a note about what changed, and compare any two.
+2. **Applications:** track each role from Interested to Offer, and record the version you sent.
+3. **Contacts:** record who you shared a version with outside an application, and get a warning when they have an older one.
+4. **LinkedIn headline:** keep every headline you've used, with when and why it changed.
 
 A version you've sent somewhere can't be deleted, so you always have a record of what each company or person received.
 
+## What it does today
+
+- **Resume:** compare any two versions line by line, download a PDF that fits the page limit you choose (any length, or 1 to 4 pages, as real text that applicant tracking systems can read), and copy the resume as plain text for application forms.
+- **Checks you set up yourself:** words every version must include, the years of experience you claim, team sizes, words to avoid, em dashes, and a pay floor. Nothing is built in, so every check comes from your own settings.
+- **Applications:** flags for overdue next steps, no posted pay range, pay below your floor, and work setups you want to avoid. Ended roles (rejected, withdrawn, or closed) leave the Active count.
+- **Contacts:** which version each person has, and follow-up dates.
+- **LinkedIn headline:** a count against LinkedIn's 220-character limit, and a check that the numbers in your headline match your current resume.
+- **Backup and restore:** a download of everything as one file, and a restore from it.
+
+<img src="docs/screenshot.png" width="600" alt="The tracker showing a sample resume for a made-up job seeker, Jordan Rivera. Tabs across the top read Resume, Applications (3), Contacts (1), LinkedIn headline, and Settings and backup. The resume preview sits beside a Checks panel with five passing checks (no em dashes, includes a required word, none of your words to avoid, experience years match, team sizes match) and a size panel showing 88 words, 585 characters, and 4 bullets.">
+
+## Design decisions and tradeoffs
+
+- **The data is a file you own, not browser storage.** The browser version keeps everything in the browser, so clearing the browser's data erases it. This version saves to one SQLite file (`data/tracker.sqlite`) on the person's computer, and the backup download still works. The tradeoff is that it needs Node.js and a terminal to run, it's tied to one computer, and nothing syncs between computers.
+- **Private by default.** There are no accounts, no cloud, no analytics, and no requests to other websites. Fonts and libraries are bundled. The server listens only on `127.0.0.1`, rejects requests with the wrong Host or Origin or without the app's own header, and sends no cross-site permission headers, so a website open in another tab can't read or change the data. The tradeoff is that the project has no usage numbers and can only learn how people use it if they say so.
+- **Never lose data silently.** Every save carries a revision number, and the server refuses a save from an out-of-date window instead of overwriting newer work. A failed save is kept and retried, with a visible warning. Data the app can't read is set aside before anything overwrites it. The server keeps one copy of the previous data per day for 30 days. The tradeoff is that if two windows are open and both change something, the older one has to reload and redo its change.
+- **Reuse the working screens and change only how they save.** Saving moved behind a small get-and-set store (`serverStore.ts`) that talks to the server, so the existing logic and its tests didn't change. The whole library is stored as one JSON document, not as separate database tables. That keeps backups from the browser version loading unchanged and is plenty for a job search. The tradeoff is that the database can't be searched by application or contact, which would matter if a future feature needed it.
+- **Nothing to compile.** SQLite comes from Node itself (`node:sqlite`), so installing means `npm install` with nothing to build for your operating system. The tradeoff is that it needs a recent Node (22.23.4 or newer, set by Astro), and Node still labels this module experimental in some versions, so the start scripts hide its warning.
+- **Nothing personal is built in.** No name, employer, number, or city is written into the code. Every check and threshold comes from the person's Settings.
+- **Accessibility is a requirement, not an extra.** The screens aim to meet WCAG 2.2 Level AA: real HTML controls, full keyboard use, labels on every field, errors linked to their field, results announced to screen readers, and enough contrast in light and dark mode. [Limitations](#limitations-and-known-gaps) says what hasn't been verified.
+- **Small, reviewed changes.** Every change goes through a pull request that is tested and built on two Node versions before it merges. That caught a wrong minimum Node version in the very first pull request.
+
+**Deliberately not built:** accounts or sign-in, hosting or syncing between computers, analytics or tracking, and requests to other websites.
+
+## Roadmap
+
+1. **A double-click installer** (Electron or Tauri), so people don't need Node.js or a terminal.
+2. **Broader testing:** Windows and Linux on a real machine, Safari and Firefox, and a screen reader tested by a person. Then a full WCAG 2.2 Level AA review.
+
+Beyond these, nothing is committed.
+
+## Limitations and known gaps
+
+- **It needs Node.js and a terminal today.** There's no installer yet.
+- **It has only been run on macOS.** Automated tests run on Linux. Windows hasn't been tried.
+- **Accessibility isn't fully verified.** The screens have been checked for color contrast in light and dark mode, use at a 375-pixel phone width, labels and error messages on form fields, keeping keyboard focus in place, and announcing results to screen readers. A person hasn't tested them with a screen reader, in Safari or Firefox, or in a full review.
+- **One person per install.** There's no sign-in, so anyone who can open this computer's browser to the app can see the data. Run it only on a computer you trust.
+- **Nothing syncs between computers.** Use a backup file to move your data.
+- **The data folder is inside the project folder.** Deleting the folder deletes the data and the daily copies, because the copies live in the same file. Download a backup now and then.
+- **PDFs are US Letter only,** and the tool's text is English only.
+- **Resumes use simple marks** for headings, bullets, and dates. There are no tables, columns, images, or custom fonts. See [Formatting your resume](docs/formatting-your-resume.md).
+
+---
+
 ## Install and run
 
-You need [Node.js](https://nodejs.org) **22.23.4 or newer** (24 is recommended) and [Git](https://git-scm.com).
+You need [Node.js](https://nodejs.org) 22.23.4 or newer (24 is recommended) and [Git](https://git-scm.com).
 
 ```bash
 git clone https://github.com/natalia-builds/search-pipeline-tracker-app.git
@@ -58,99 +98,33 @@ npm start
 
 Then open **http://localhost:4321** in your browser. The first `npm start` takes a few extra seconds to build the app.
 
-To stop the app, press **Ctrl+C** in the terminal. Your data is kept. Start it again with `npm start` any time.
-
-To use a different port (if 4321 is taken): `npm start -- --port 4400`.
-
-To update later, run `git pull`, then `npm install`, then `npm start -- --rebuild`.
+To stop it, press **Ctrl+C** in the terminal. Your data is kept. To use a different port: `npm start -- --port 4400`. To update later, run `git pull`, then `npm install`, then `npm start -- --rebuild`.
 
 ### First steps
 
 1. Choose **Try it with sample data** to look around with a made-up job seeker. When you're ready for your own, go to **Settings and backup → Delete everything**.
-2. **Paste your resume** and select **Save version**. See [Formatting your resume](#formatting-your-resume).
-3. **Set up your checks** in **Settings and backup**: your name, words every version must include, your years of experience, and any words you want to avoid. All optional.
+2. **Paste your resume** and select **Save version**. See [Formatting your resume](docs/formatting-your-resume.md).
+3. **Set up your checks** in **Settings and backup**. All of them are optional.
 4. **Add applications** as you pursue roles, and pick the resume version you sent.
-5. **Tailor and save.** When you change your resume for a role, save it as a new version and choose the role under **Tailored for**.
-6. **Download a backup** from **Settings and backup** every week or two.
+5. **Download a backup** from **Settings and backup** every week or two.
 
-## Your data and backups
+### Your data and backups
 
-Everything is saved in one SQLite file:
+Everything is saved in one SQLite file, `data/tracker.sqlite`, inside the project folder. To keep it somewhere else, set `SPT_DATA_DIR` before starting: `SPT_DATA_DIR=~/Documents/job-search npm start`. The `data` folder is excluded from Git, so it won't be committed by accident.
 
-```
-search-pipeline-tracker-app/data/tracker.sqlite
-```
+Choose **Settings and backup → Download backup** to save a `.json` file, and keep it somewhere safe, such as a cloud drive. The app reminds you when your last backup is more than two weeks old. Backups and the data file contain your resume and your contacts' details, so keep them as private as the resume itself.
 
-To keep it somewhere else, set `SPT_DATA_DIR` before starting: `SPT_DATA_DIR=~/Documents/job-search npm start`.
+### Moving over from the browser version
 
-- **The app only listens on your own computer** (`127.0.0.1`). Other devices on your network can't reach it, and it refuses requests from other websites.
-- **A daily safety copy.** The first time you change something each day, the app keeps a copy of the previous version of your data inside the same file, for the last 30 days.
-- **Two windows won't overwrite each other.** If you have the app open twice and both change something, the older save is refused with a message instead of silently losing work.
-- **Backups are still your safety net.** Choose **Settings and backup → Download backup** to save a `.json` file. Keep it somewhere safe, such as a cloud drive. The app reminds you when your last backup is more than two weeks old. To move to another computer, download a backup there and choose **Restore from a backup file**.
-- **Don't delete the project folder** without saving a backup first. The `data` folder is inside it.
+Open the [browser version](https://natalia-builds.github.io/search-pipeline-and-tracker/) in the browser you've been using and choose **Settings and backup → Download backup**. Then, in this app, choose **Settings and backup → Restore from a backup file** and pick that file.
 
-Backups and the data file contain your resume and your contacts' details, so keep them as private as you would the resume itself. The `data` folder is excluded from Git, so it won't be committed by accident.
-
-## Moving over from the browser version
-
-1. Open the [browser version](https://natalia-builds.github.io/search-pipeline-and-tracker/) in the browser you've been using. Choose **Settings and backup → Download backup**.
-2. Start this app, open **Settings and backup**, and choose **Restore from a backup file**. Pick the file you just downloaded.
-
-## Formatting your resume
-
-The resume editor uses a few simple marks to know what's a heading, a bullet, or a date. This keeps your resume as plain text, which is what makes the PDF readable by applicant tracking systems.
-
-| To get | Type |
-| --- | --- |
-| Your name at the top | `# ` then your name, on the first line |
-| A section heading, such as Experience | `## ` then the heading |
-| A company or school name | `### ` then the name |
-| A bullet point | `* ` then the text |
-| **Bold** text, such as a key number | `**` on both sides: `**31%**` |
-| Dates lined up on the right | Press **Tab** between the job title and the dates |
-| Your contact details, in smaller gray text | Put them on the line right after your name |
-
-In the editor, the Tab key types a tab. To move on to the next field, press Esc and then Tab, or press Shift+Tab to go back. The same help, with this example, is under **How to format your resume** above the editor.
-
-Here's a short example. The space before each date is a Tab.
-
-```
-# Jordan Rivera
-jordan.rivera@example.com | 555.010.0199 | Springfield
-
-## Experience
-### Brightline Payments
-Senior Product Manager	2021 - Present
-* Led an invoicing redesign that cut time to first payment by **31%**
-* Managed 4 direct reports across product and design
-
-## Education
-State University	B.A. Economics
-```
-
-**The quickest way in, if your resume is in Google Docs:** choose **File → Download → Markdown (.md)**, open the downloaded file in a text editor, and paste everything into the tracker. Headings come across if your resume uses Google Docs heading styles. The tracker removes the extra backslashes that Google Docs adds. If your dates don't line up on the right, put a Tab between each job title and its dates.
-
-**If your resume is in Word or a PDF,** paste it in, then add the marks above. It usually takes a few minutes, and you only do it once.
-
-## Limits
-
-- **US Letter only:** PDFs are US Letter size (8.5 × 11 inches), not A4.
-- **No syncing:** nothing syncs between computers. Use a backup file to move your data.
-- **One person per install:** there are no accounts or sign-in. Anyone who can open your computer's browser to this app can see your data, so run it only on a computer you trust.
-- **English only:** the tool's text is in English.
-- **Simple formatting:** resumes use the marks above. There are no tables, columns, images, or custom fonts.
-
-## Accessibility
-
-The app aims to meet WCAG 2.2 Level AA. The screens come from the browser version, which has been checked for color contrast in light and dark mode, use at a 375-pixel phone width, labels and error messages on form fields, keeping keyboard focus in place, and announcing results to screen readers. It hasn't yet been tested with a screen reader by a person, or in Safari or Firefox, so it hasn't had a full accessibility review. If something doesn't work for you, please [open an issue](https://github.com/natalia-builds/search-pipeline-tracker-app/issues).
-
-## Questions, bugs and ideas
-
-Please [open an issue](https://github.com/natalia-builds/search-pipeline-tracker-app/issues) on GitHub. Never paste your real resume, contacts, or a backup file into an issue, because issues are public.
+---
 
 ## For developers
 
-Built with [Astro](https://astro.build) and TypeScript for the screens, a small Node server with the SQLite that ships inside Node (`node:sqlite`, so no native packages to compile), [Vitest](https://vitest.dev) for tests, and [jsPDF](https://github.com/parallax/jsPDF) for PDFs.
+Built with [Astro](https://astro.build) and TypeScript for the screens, a small Node server that uses the SQLite built into Node, [Vitest](https://vitest.dev) for tests, and [jsPDF](https://github.com/parallax/jsPDF) for PDFs. GitHub Actions tests and builds every pull request.
+
+### Run it for development
 
 ```bash
 npm install      # download the packages the project needs
@@ -160,15 +134,19 @@ npm test         # run the automated tests
 npm run build    # build the screens into dist/
 ```
 
-**Where things live**
-- `server/app.mjs`: the local server. It serves `dist/` and saves your library through `GET` and `PUT /api/library`, with checks that keep other websites out. `server/index.mjs` starts it.
-- `src/lib/`: the logic, with tests. Formatting, comparing versions, checks, backups, PDFs, sample data. `serverStore.ts` is how the screens save through the server.
+### Where things live
+
+- [Resume formatting guide](docs/formatting-your-resume.md): the marks the editor understands
+- `server/app.mjs`: the local server. It serves the built app and saves the library through `GET` and `PUT /api/library`, with the checks that keep other websites out. `server/index.mjs` starts it.
+- `src/lib/`: the logic and its tests (formatting, comparing versions, checks, backups, PDFs, sample data). `serverStore.ts` is how the screens save through the server.
 - `src/scripts/app.ts`: the interactive page. `src/pages/index.astro`: the page shell. `src/styles/app.css`: styles.
 - `scripts/`: the `npm start` and `npm run dev` launchers.
-- `CLAUDE.md`: the project's principles and workflow.
+- [CLAUDE.md](CLAUDE.md): the project's principles and working rules
 
-**Contributing:** open an issue first to talk through the change. Then make a branch, keep the pull request to one purpose, and run `npm test` and `npm run build` before you push. Please keep the app private by default: no accounts, analytics, or requests to other sites.
+### Contributing
 
-## License
+Issues are welcome. [Open one](https://github.com/natalia-builds/search-pipeline-tracker-app/issues) to report a problem or suggest an idea, and open one before a larger change so it can be talked through. Then make a branch, keep the pull request to one purpose, and run `npm test` and `npm run build` before you push. Please keep the app private by default. Never paste your real resume, contacts, or a backup file into an issue, because issues are public.
+
+### License
 
 [MIT](LICENSE). The Carlito font used in PDFs is under the [SIL Open Font License](public/fonts/OFL.txt).

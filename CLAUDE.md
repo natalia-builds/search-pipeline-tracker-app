@@ -17,6 +17,7 @@ A free, open-source job search tracker that people download and run on their own
 - `src/scripts/app.ts`: the interactive page (rendering and event handling). Per-device conveniences (open section, unsaved drafts) stay in the browser's `localStorage`; the library does not.
 - `src/pages/index.astro`: the page shell. `src/styles/app.css`: styles and color tokens.
 - `scripts/start.mjs` (`npm start`) and `scripts/dev.mjs` (`npm run dev`).
+- `docs/`: the README screenshot and the resume formatting guide. The README follows the same structure as the maintainer's other repos (Status, who it's for, what it does, design decisions and tradeoffs, roadmap, limitations, then install and developer sections) and is written so a recruiter or hiring manager can skim it. State only facts that can be verified, and keep "Status" and "Limitations" honest when things change.
 
 ## Running it
 
