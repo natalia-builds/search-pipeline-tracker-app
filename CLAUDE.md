@@ -4,7 +4,7 @@ A free, open-source job search tracker that people download and run on their own
 
 ## Principles
 
-- **Private by default:** all data stays on the person's computer, in `data/tracker.sqlite` (or `SPT_DATA_DIR`). No accounts, no cloud, no analytics, no outside requests (fonts and libraries are bundled, not loaded from CDNs). Don't add any of these without a decision recorded in an Issue.
+- **Private by default:** all data stays on the person's computer, in `data/tracker.sqlite` (or `SPT_DATA_DIR`), or in the operating system's app-data folder for the desktop window. No accounts, no cloud, no analytics, no outside requests (fonts and libraries are bundled, not loaded from CDNs). Don't add any of these without a decision recorded in an Issue.
 - **The server only talks to this computer:** it listens on `127.0.0.1`, and `guard()` in `server/app.mjs` rejects a wrong Host (DNS rebinding), a wrong Origin, and requests missing the `X-SPT` header. It sends no CORS headers. Keep all three checks and keep their tests passing.
 - **Nothing personal built in:** every check and threshold comes from the person's Settings. Never hard-code a name, employer, number, or city.
 - **Backups matter:** keep backup download and restore working, and keep old backups (including ones from the browser version) loading. If the saved data's shape changes, raise `SCHEMA_VERSION` in `src/lib/types.ts` and handle older data in `normalize` in `src/lib/storage.ts`.
@@ -17,14 +17,14 @@ A free, open-source job search tracker that people download and run on their own
 - `src/scripts/app.ts`: the interactive page (rendering and event handling). Per-device conveniences (open section, unsaved drafts) stay in the browser's `localStorage`; the library does not.
 - `src/pages/index.astro`: the page shell. `src/styles/app.css`: styles and color tokens.
 - `scripts/start.mjs` (`npm start`) and `scripts/dev.mjs` (`npm run dev`).
-- `desktop/main.mjs`: the Electron shell (`npm run desktop`). It starts the server with `startServer` on a free port and shows it in one window. Keep its security settings: `contextIsolation`, no `nodeIntegration`, `sandbox`, no preload script, navigation limited to the app's own address, external links opened in the default browser, remote requests cancelled, permissions denied. `desktop/urls.mjs` holds the address rules, with tests in `desktop/urls.test.mjs`. The decision to use Electron is in `docs/decisions/installer.md`.
+- `desktop/main.mjs`: the Electron shell (`npm run desktop`). It starts the server with `startServer` on a free port and shows it in one window. Keep its security settings: `contextIsolation`, no `nodeIntegration`, `sandbox`, no preload script, navigation limited to the app's own address, external links opened in the default browser, remote requests cancelled, permissions denied. `desktop/urls.mjs` holds the address rules, with tests in `desktop/urls.test.mjs`. `desktop/dataDir.mjs` decides where the shell keeps its data (`SPT_DATA_DIR`, else `<userData>/data`), with tests in `desktop/dataDir.test.mjs`. The `productName` in `package.json` ("Job Search Tracker") names that folder, so changing it moves where people's data is looked for: don't change it without a migration. The decision to use Electron is in `docs/decisions/installer.md`.
 - `docs/`: the README screenshot and the resume formatting guide. The README follows the same structure as the maintainer's other repos (Status, who it's for, what it does, design decisions and tradeoffs, roadmap, limitations, then install and developer sections) and is written so a recruiter or hiring manager can skim it. State only facts that can be verified, and keep "Status" and "Limitations" honest when things change.
 
 ## Running it
 
 - `npm start` builds once, then serves `dist/` and the API on `http://localhost:4321`.
 - `npm run dev` runs the server on 4322 and Astro's live-reload page on 4321, which proxies `/api` to the server.
-- `npm run desktop` builds, then opens the app in an Electron window on a free port. The first run downloads Electron's binary (about 100 MB or more). It still saves to `data/` (or `SPT_DATA_DIR`). It has only been tried on macOS.
+- `npm run desktop` builds, then opens the app in an Electron window on a free port. The first run downloads Electron's binary (about 100 MB or more). It saves to `<OS app-data folder>/Job Search Tracker/data` (on macOS, `~/Library/Application Support/Job Search Tracker/data`), or to `SPT_DATA_DIR` if set, not to the project's `data/`. When testing it, pass `--user-data-dir=<scratch folder>` to Electron so nothing is created in the real app-data folder. It has only been tried on macOS.
 - Needs Node 22.23.4 or newer (Astro's minimum; `node:sqlite` itself needs 22.13). Scripts pass `--disable-warning=ExperimentalWarning` to hide its notice.
 
 ## Accessibility
