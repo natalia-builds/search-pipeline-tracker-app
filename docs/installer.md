@@ -40,10 +40,10 @@ Pushing a version tag starts [`.github/workflows/release.yml`](../.github/workfl
 1. **Bump `version` in `package.json`** and merge that in a pull request. The installer's file name and version come from `package.json`, not from the tag, and the workflow does not check that the two match.
 2. **Tag the merged commit and push the tag:**
    ```bash
-   git tag v0.2.0
-   git push origin v0.2.0
+   git tag v1.0.0
+   git push origin v1.0.0
    ```
-3. Watch the **Release** run under the repository's Actions tab. When it finishes, the release has the installers and a `SHA256SUMS.txt` file attached. A tag with a dash in it, like `v0.2.0-rc.1`, is published as a **prerelease**.
+3. Watch the **Release** run under the repository's Actions tab. When it finishes, the release has the installers and a `SHA256SUMS.txt` file attached. A tag with a dash in it, like `v1.0.0-rc.1`, is published as a **prerelease**, which is a way to let a few people try the installers before the real release.
 
 What the workflow does:
 
@@ -53,7 +53,7 @@ What the workflow does:
 - **It works with a release that already exists.** If a release for the tag already exists, the files are added to it, replacing files with the same name. Otherwise it creates the release with automatically generated notes.
 - **`SHA256SUMS.txt`** lists a checksum for each installer, so someone can check a download against it with `shasum -a 256 <file>` on macOS or `sha256sum <file>` on Linux. It isn't a signature. It only shows the file wasn't damaged or swapped after the release was made.
 
-**About the existing `v0.1.0` release.** The repository already has a `v0.1.0` tag and release, from before any installer existed. That tag points at an older commit, so the first release with installers needs a new version number (the next one, for example `v0.2.0`), after bumping `package.json`. The version number is a decision for the maintainer.
+**About the existing `v0.1.0` release.** The repository already has a `v0.1.0` tag and release, from before any installer existed. That tag points at an older commit, so it can't be reused. The first release with installers will be **`v1.0.0`**: the maintainer chose that number on 2026-11-21, and `package.json` is already at 1.0.0. Until a `v1.0.0` tag is pushed, no release has installers. The old `v0.1.0` release stays as history.
 
 **Windows and Linux are untested by hand.** Nobody has run the Windows or Linux installers on a Windows or Linux computer. The workflow only proves they build. The notes below come from general knowledge of how these systems behave, not from anything run for this project, so treat them as expectations:
 
