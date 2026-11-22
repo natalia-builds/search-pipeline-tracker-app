@@ -78,15 +78,16 @@ A version you've sent somewhere can't be deleted, so you always have a record of
 
 Live progress for each stage is on the [milestones page](https://github.com/natalia-builds/search-pipeline-tracker-app/milestones).
 
-The first stage, a double-click installer for macOS, Windows and Linux, shipped as version 1.0.0 (see [Status](#status)). The stage that remains:
+The first stage, a double-click installer for macOS, Windows and Linux, shipped as version 1.0.0 (see [Status](#status)). The stages that remain:
 
 2. **Broader testing and accessibility.** Tests on Windows and macOS in CI ([#14](https://github.com/natalia-builds/search-pipeline-tracker-app/issues/14)) and a start-up smoke test ([#15](https://github.com/natalia-builds/search-pipeline-tracker-app/issues/15)). An automated accessibility check ([#16](https://github.com/natalia-builds/search-pipeline-tracker-app/issues/16)) and a written checklist ([#17](https://github.com/natalia-builds/search-pipeline-tracker-app/issues/17)). Then testing by a person with VoiceOver ([#18](https://github.com/natalia-builds/search-pipeline-tracker-app/issues/18)) and in Safari and Firefox ([#19](https://github.com/natalia-builds/search-pipeline-tracker-app/issues/19)), and an update to this README with what was verified ([#20](https://github.com/natalia-builds/search-pipeline-tracker-app/issues/20)).
+3. **Signed installers.** A written decision on whether and how to sign the installers, so macOS and Windows stop warning about an unidentified developer ([#34](https://github.com/natalia-builds/search-pipeline-tracker-app/issues/34)). Signing itself is only planned if that decision is to go ahead. It may be "not now".
 
 Beyond these, nothing is committed.
 
 ## Limitations and known gaps
 
-- **The installers aren't signed.** macOS and Windows are expected to warn that the app is from an unidentified developer the first time you open a downloaded copy, and macOS blocks it until you choose Open Anyway. Signing needs paid developer certificates and isn't decided or planned. [Install the app](#install-the-app) has the steps.
+- **The installers aren't signed.** macOS and Windows are expected to warn that the app is from an unidentified developer the first time you open a downloaded copy, and macOS blocks it until you choose Open Anyway. Signing needs paid developer certificates, or a free one with conditions for open-source projects. Whether to sign is an open decision ([#34](https://github.com/natalia-builds/search-pipeline-tracker-app/issues/34)). [Install the app](#install-the-app) has the steps.
 - **Only the macOS installer has been opened by a person,** and that was a copy built on the maintainer's own Mac. The Windows and Linux installers are built and their automated tests pass, but nobody has run them on Windows or Linux, so they may have problems nobody has seen. On pull requests the regular tests still run on Linux only ([#14](https://github.com/natalia-builds/search-pipeline-tracker-app/issues/14)).
 - **The installers cover three kinds of computer:** Macs with Apple silicon (not Intel Macs), 64-bit Windows and 64-bit Linux. Each file is between 120 and 126 MB.
 - **No automatic updates.** To update, download the new installer and replace the app. Your data is stored outside the app, so it should be kept. Download a backup first to be safe.
