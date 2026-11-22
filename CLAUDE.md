@@ -12,7 +12,7 @@ A free, open-source job search tracker that people download and run on their own
 
 ## Where things live
 
-- `server/app.mjs`: the server (static files, `/api/library`, `/api/aside`, SQLite). `server/index.mjs`: starts it. `server/app.test.mjs`: its tests.
+- `server/app.mjs`: the server (static files, `/api/library`, `/api/aside`, SQLite). `server/start.mjs`: `startServer({ port, dataDir, distDir })` starts it from code (port 0 picks a free port) and returns `{ server, port, close }`. `server/index.mjs`: the command-line start (port, data folder, messages, Ctrl+C) built on `startServer`. `server/app.test.mjs` and `server/start.test.mjs`: their tests.
 - `src/lib/`: logic with tests (Markdown, diff, checks, storage and backups, PDF, sample data). `src/lib/serverStore.ts`: a get/set store that saves through the server in the background, so `storage.ts` and the screens didn't have to change.
 - `src/scripts/app.ts`: the interactive page (rendering and event handling). Per-device conveniences (open section, unsaved drafts) stay in the browser's `localStorage`; the library does not.
 - `src/pages/index.astro`: the page shell. `src/styles/app.css`: styles and color tokens.
