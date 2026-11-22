@@ -1,0 +1,25 @@
+# How `npm run dist` packages the app into an installer. See docs/installer.md.
+# The app's name and version come from package.json (productName, version).
+appId: io.github.natalia-builds.search-pipeline-tracker
+directories:
+  output: release
+# Only what the app needs when it runs: the built screens, the server and the desktop shell.
+# The screens' libraries (Astro, jsPDF) are already bundled into dist/, so no node_modules go in.
+files:
+  - dist/**
+  - server/**
+  - desktop/**
+  - package.json
+  - "!**/*.test.mjs"
+  - "!node_modules/**"
+artifactName: Job-Search-Tracker-${version}-${arch}.${ext}
+mac:
+  category: public.app-category.productivity
+  target: dmg
+  # No real code signing yet: no certificate, no Apple account, no secrets. A downloaded copy is still
+  # untrusted and macOS shows its "unidentified developer" warning on first open.
+  # "-" means a free "ad-hoc" signature, which just seals the app's files together. With `null`
+  # (skip signing) `codesign --verify` failed with "code has no resources but signature indicates they
+  # must be present"; with "-" it reports "valid on disk". "-" also stops electron-builder from picking up
+  # a certificate that happens to be in someone's keychain. See docs/installer.md.
+  identity: "-"

@@ -156,6 +156,9 @@ vite.config.ts.timestamp-*
 .nx/workspace-data
 .nx/migrate-runs
 
+# installers built by `npm run dist`
+release/
+
 # local user data (never commit personal search data)
 data/
 *.db
