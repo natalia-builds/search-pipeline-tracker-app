@@ -6,12 +6,11 @@ import { existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join, resolve } from "node:path";
 import { startServer } from "../server/start.mjs";
+import { desktopDataDir } from "./dataDir.mjs";
 import { appOrigin, isAppUrl, isWebLink } from "./urls.mjs";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const distDir = join(root, "dist");
-// Same place as `npm start` for now. A later step moves a packaged app's data to the OS app-data folder.
-const dataDir = resolve(process.env.SPT_DATA_DIR || join(root, "data"));
 
 let running; // { server, port, close } once the server is up
 let quitting = false;
@@ -65,6 +64,8 @@ function fail(message) {
 
 app.whenReady().then(async () => {
   if (!existsSync(join(distDir, "index.html"))) return fail("The app has not been built yet. Run `npm run desktop`, which builds it first.");
+  // The OS's per-user app-data folder (not the project folder), unless SPT_DATA_DIR says otherwise.
+  const dataDir = desktopDataDir({ envDir: process.env.SPT_DATA_DIR, userDataDir: app.getPath("userData") });
   try {
     running = await startServer({ port: 0, dataDir, distDir });
   } catch (e) {

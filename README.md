@@ -81,7 +81,7 @@ Beyond these, nothing is committed.
 - **Accessibility isn't fully verified.** The screens have been checked for color contrast in light and dark mode, use at a 375-pixel phone width, labels and error messages on form fields, keeping keyboard focus in place, and announcing results to screen readers. A person hasn't tested them with a screen reader, in Safari or Firefox, or in a full review.
 - **One person per install.** There's no sign-in, so anyone who can open this computer's browser to the app can see the data. Run it only on a computer you trust.
 - **Nothing syncs between computers.** Use a backup file to move your data.
-- **The data folder is inside the project folder.** Deleting the folder deletes the data and the daily copies, because the copies live in the same file. Download a backup now and then.
+- **With `npm start`, the data folder is inside the project folder.** Deleting the folder deletes the data and the daily copies, because the copies live in the same file. The app window (`npm run desktop`) keeps its data in the operating system's app-data folder instead. Download a backup now and then either way.
 - **PDFs are US Letter only,** and the tool's text is English only.
 - **Resumes use simple marks** for headings, bullets, and dates. There are no tables, columns, images, or custom fonts. See [Formatting your resume](docs/formatting-your-resume.md).
 
@@ -112,7 +112,15 @@ To stop it, press **Ctrl+C** in the terminal. Your data is kept. To use a differ
 
 ### Your data and backups
 
-Everything is saved in one SQLite file, `data/tracker.sqlite`, inside the project folder. To keep it somewhere else, set `SPT_DATA_DIR` before starting: `SPT_DATA_DIR=~/Documents/job-search npm start`. The `data` folder is excluded from Git, so it won't be committed by accident.
+Everything is saved in one SQLite file, `tracker.sqlite`. Where it lives depends on how you run the app:
+
+- **`npm start`** saves to `data/tracker.sqlite` inside the project folder. To keep it somewhere else, set `SPT_DATA_DIR` before starting: `SPT_DATA_DIR=~/Documents/job-search npm start`. The `data` folder is excluded from Git, so it won't be committed by accident.
+- **`npm run desktop`** (the app in its own window, and the installer once there is one) saves to a `data` folder inside the operating system's app-data folder for "Job Search Tracker". `SPT_DATA_DIR` still wins if you set it.
+  - macOS: `~/Library/Application Support/Job Search Tracker/data/tracker.sqlite`. This is the path that has been checked.
+  - Windows: `%APPDATA%\Job Search Tracker\data\tracker.sqlite`. Expected from Electron's documented locations, not yet checked.
+  - Linux: `~/.config/Job Search Tracker/data/tracker.sqlite`. Expected from Electron's documented locations, not yet checked.
+
+The two ways don't share data: the window starts empty the first time, even if you have used `npm start` before. To bring your data over, the safest way is in the app: in the `npm start` version choose **Settings and backup → Download backup**, then in the window choose **Settings and backup → Restore from a backup file**. You can also copy the file. Quit both apps first, then copy `data/tracker.sqlite` from the project folder into the window's `data` folder (create it if it isn't there). This replaces anything already saved in the window.
 
 Choose **Settings and backup → Download backup** to save a `.json` file, and keep it somewhere safe, such as a cloud drive. The app reminds you when your last backup is more than two weeks old. Backups and the data file contain your resume and your contacts' details, so keep them as private as the resume itself.
 
@@ -144,7 +152,7 @@ npm run build    # build the screens into dist/
 - `src/lib/`: the logic and its tests (formatting, comparing versions, checks, backups, PDFs, sample data). `serverStore.ts` is how the screens save through the server.
 - `src/scripts/app.ts`: the interactive page. `src/pages/index.astro`: the page shell. `src/styles/app.css`: styles.
 - `scripts/`: the `npm start` and `npm run dev` launchers.
-- `desktop/`: the Electron window for `npm run desktop`. It runs the same local server and shows it in a window. The first run downloads Electron (about 100 MB or more), and it has only been tried on macOS.
+- `desktop/`: the Electron window for `npm run desktop`. It runs the same local server and shows it in a window, saving to the operating system's app-data folder (see [Your data and backups](#your-data-and-backups)). The first run downloads Electron (about 100 MB or more), and it has only been tried on macOS.
 - [CLAUDE.md](CLAUDE.md): the project's principles and working rules
 
 ### Contributing
