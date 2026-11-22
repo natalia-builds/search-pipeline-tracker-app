@@ -4,7 +4,7 @@ A free, open-source job search tracker that runs on your own computer. It keeps 
 
 **Try it in your browser, no install:** [the browser version](https://natalia-builds.github.io/search-pipeline-and-tracker/) (the same tracker, with data kept in your browser instead of a file)
 
-**Download it for your computer:** installers for macOS, Windows and Linux are on the [latest release](https://github.com/natalia-builds/search-pipeline-tracker-app/releases/latest). The [install steps](#install-and-run) explain the warning you will see the first time, because the installers aren't signed.
+**Download it for your computer:** installers for macOS, Windows and Linux are on the [latest release](https://github.com/natalia-builds/search-pipeline-tracker-app/releases/latest). The [install steps](#how-to-use-it) explain the warning you will see the first time, because the installers aren't signed.
 
 ## Contents
 
@@ -14,7 +14,7 @@ A free, open-source job search tracker that runs on your own computer. It keeps 
 - [Design decisions and tradeoffs](#design-decisions-and-tradeoffs)
 - [Roadmap](#roadmap)
 - [Limitations and known gaps](#limitations-and-known-gaps)
-- [Install and run](#install-and-run)
+- [How to use it](#how-to-use-it)
   - [Install the app](#install-the-app)
   - [Or run it from the source code](#or-run-it-from-the-source-code)
   - [First steps](#first-steps)
@@ -34,7 +34,7 @@ The [latest release](https://github.com/natalia-builds/search-pipeline-tracker-a
 
 - The automated tests passed on macOS, Windows and Linux when 1.0.0 was built, and each installer was built on its own system.
 - A person has opened only the macOS installer, and that was a copy built on the maintainer's own Mac (macOS 26.7, Apple silicon). Nobody has yet run the Windows or Linux installer on Windows or Linux, or opened the published macOS file after downloading it.
-- The installers aren't signed, so macOS and Windows are expected to warn about an unidentified developer the first time. [Install and run](#install-and-run) has the steps.
+- The installers aren't signed, so macOS and Windows are expected to warn about an unidentified developer the first time. [How to use it](#how-to-use-it) has the steps.
 
 ## Who it's for and the problem it solves
 
@@ -99,7 +99,7 @@ Beyond these, nothing is committed.
 
 ---
 
-## Install and run
+## How to use it
 
 ### Install the app
 

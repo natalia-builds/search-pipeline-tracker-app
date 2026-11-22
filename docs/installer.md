@@ -4,7 +4,7 @@
 
 ## Build it on your Mac
 
-You need what the [README](../README.md#install-and-run) asks for (Node.js and Git), and a Mac.
+You need what the [README](../README.md#how-to-use-it) asks for (Node.js and Git), and a Mac.
 
 ```bash
 npm install
