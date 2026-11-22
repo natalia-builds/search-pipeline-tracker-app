@@ -139,7 +139,7 @@ npm run build    # build the screens into dist/
 ### Where things live
 
 - [Resume formatting guide](docs/formatting-your-resume.md): the marks the editor understands
-- `server/app.mjs`: the local server. It serves the built app and saves the library through `GET` and `PUT /api/library`, with the checks that keep other websites out. `server/index.mjs` starts it.
+- `server/app.mjs`: the local server. It serves the built app and saves the library through `GET` and `PUT /api/library`, with the checks that keep other websites out. `server/start.mjs` starts it from code, and `server/index.mjs` is the command-line start.
 - `src/lib/`: the logic and its tests (formatting, comparing versions, checks, backups, PDFs, sample data). `serverStore.ts` is how the screens save through the server.
 - `src/scripts/app.ts`: the interactive page. `src/pages/index.astro`: the page shell. `src/styles/app.css`: styles.
 - `scripts/`: the `npm start` and `npm run dev` launchers.
