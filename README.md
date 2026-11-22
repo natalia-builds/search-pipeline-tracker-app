@@ -28,9 +28,10 @@ A free, open-source job search tracker that runs on your own computer. It keeps 
 
 ## Status
 
-**Version 1.0.0, the first release with installers.** Version 0.1.0 was the first release of the local app, which you ran from the source code. It works end to end and has automated tests for the server (including its security checks), the browser-side saving, and the resume logic. The screens come from the [browser version](https://github.com/natalia-builds/search-pipeline-and-tracker), which was released first. This version changes where the data lives.
+**Version 1.0.0, the first release with installers.** Version 0.1.0 was the first release of the local app, which had to be run from the source code. It works end to end and has automated tests for the server (including its security checks), the browser-side saving, and the resume logic. The screens come from the [browser version](https://github.com/natalia-builds/search-pipeline-and-tracker), which was released first. This version changes where the data lives.
 
-The [latest release](https://github.com/natalia-builds/search-pipeline-tracker-app/releases/latest) has an installer for macOS (Apple silicon), Windows (64-bit) and Linux (64-bit). **What was actually tested:**
+The [latest release](https://github.com/natalia-builds/search-pipeline-tracker-app/releases/latest) has an installer for macOS (Apple silicon), Windows (64-bit) and Linux (64-bit). **What has been tested:**
+
 - The automated tests passed on macOS, Windows and Linux when 1.0.0 was built, and each installer was built on its own system.
 - A person has opened only the macOS installer, and that was a copy built on the maintainer's own Mac (macOS 26.7, Apple silicon). Nobody has yet run the Windows or Linux installer on Windows or Linux, or opened the published macOS file after downloading it.
 - The installers aren't signed, so macOS and Windows are expected to warn about an unidentified developer the first time. [Install and run](#install-and-run) has the steps.

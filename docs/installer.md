@@ -31,7 +31,7 @@ Because the build isn't signed with an Apple Developer certificate and hasn't be
 - **A downloaded copy will be blocked the first time.** On macOS 15 (Sequoia) and later, Apple's guide gives these steps: try to open the app, then open **System Settings → Privacy & Security**, scroll to **Security**, choose **Open Anyway**, and enter your login password. The button stays available for about an hour after the attempt. After that, the app opens normally.
 - **The older right-click method is for older macOS.** Control-click then **Open** appears only in Apple's guide for earlier versions, not the one for macOS 15.
 
-Source: Apple, [Open a Mac app from an unknown developer](https://support.apple.com/guide/mac-help/open-a-mac-app-from-an-unknown-developer-mh40616/15.0/mac/15.0). The warning dialog itself wasn't shown during this work, so the exact wording on your Mac may differ. This will be tested with a real download once installers are published ([#12](https://github.com/natalia-builds/search-pipeline-tracker-app/issues/12), [#13](https://github.com/natalia-builds/search-pipeline-tracker-app/issues/13)).
+Source: Apple, [Open a Mac app from an unknown developer](https://support.apple.com/guide/mac-help/open-a-mac-app-from-an-unknown-developer-mh40616/15.0/mac/15.0). The warning dialog itself has not been seen, so the exact wording on your Mac may differ. This will be tested with a real download once installers are published ([#12](https://github.com/natalia-builds/search-pipeline-tracker-app/issues/12), [#13](https://github.com/natalia-builds/search-pipeline-tracker-app/issues/13)).
 
 ## Releasing all three installers
 
@@ -63,7 +63,7 @@ What the workflow does:
 
 ## What "unsigned" means here
 
-The config uses an "ad-hoc" signature (`identity: "-"` in `electron-builder.yml`). That is free, needs no certificate, no Apple account and no secrets, and it does not make the app trusted. It only seals the app's files together. It matters because with signing skipped entirely, the packaged app's seal was broken: `codesign --verify` reported "code has no resources but signature indicates they must be present". With the ad-hoc signature it reports "valid on disk", and the app launched normally on macOS 26.7. macOS may treat an app with a broken seal as damaged, and I did not test that on a downloaded copy.
+The config uses an "ad-hoc" signature (`identity: "-"` in `electron-builder.yml`). That is free, needs no certificate, no Apple account and no secrets, and it does not make the app trusted. It only seals the app's files together. It matters because with signing skipped entirely, the packaged app's seal was broken: `codesign --verify` reported "code has no resources but signature indicates they must be present". With the ad-hoc signature it reports "valid on disk", and the app launched normally on macOS 26.7. macOS may treat an app with a broken seal as damaged, and that has not been tested on a downloaded copy.
 
 Real signing and notarization need a paid Apple Developer Program membership and certificates kept as secrets in CI. That isn't decided or planned. It would be its own decision first.
 

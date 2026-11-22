@@ -6,7 +6,7 @@
 
 ## The question
 
-Today you need Node.js and a terminal to run the app. We want a double-click installer for macOS, Windows and Linux. The two candidates are **Electron** and **Tauri**. This page compares them for *this* app and records the choice, so the installer issues that follow ([#8](https://github.com/natalia-builds/search-pipeline-tracker-app/issues/8) to [#13](https://github.com/natalia-builds/search-pipeline-tracker-app/issues/13)) build on something written down.
+Today you need Node.js and a terminal to run the app. The goal is a double-click installer for macOS, Windows and Linux. The two candidates are **Electron** and **Tauri**. This page compares them for *this* app and records the choice, so the installer issues that follow ([#8](https://github.com/natalia-builds/search-pipeline-tracker-app/issues/8) to [#13](https://github.com/natalia-builds/search-pipeline-tracker-app/issues/13)) build on something written down.
 
 ## What the app needs
 
@@ -29,13 +29,13 @@ Today you need Node.js and a terminal to run the app. We want a double-click ins
 
 **How the server runs.** *Electron:* the server runs inside the app's own Node, so `server/app.mjs` can be started from the app's main process with little or no change. *Tauri:* the web view is the system's, and the server would have to be compiled into a sidecar binary for each operating system, or rewritten in Rust. Either way is new work and a new thing to test.
 
-**Installer size.** *Electron:* large, because it ships its own browser and Node. One third-party Windows test measured about 106 MB for Electron against about 1 MB for Tauri on the same app, and other write-ups quote roughly 120 to 200 MB against 3 to 10 MB. *Tauri:* much smaller on its own, but a Node sidecar adds back a lot. I found no measured figure for that, only a report of a 71 MB Python sidecar. So Tauri's size advantage for this app is real but smaller than the headline numbers.
+**Installer size.** *Electron:* large, because it ships its own browser and Node. One third-party Windows test measured about 106 MB for Electron against about 1 MB for Tauri on the same app, and other write-ups quote roughly 120 to 200 MB against 3 to 10 MB. *Tauri:* much smaller on its own, but a Node sidecar adds back a lot. No measured figure turned up for that, only a report of a 71 MB Python sidecar. So Tauri's size advantage for this app is real but smaller than the headline numbers.
 
 **Building for macOS, Windows and Linux.** Both document builds for all three systems. Not checked here: whether one machine can build for all three. Issue [#12](https://github.com/natalia-builds/search-pipeline-tracker-app/issues/12) should use one CI runner per system unless it finds otherwise. *Tauri* also needs a Rust toolchain, and its Node sidecar has to be built for each platform (the sidecar docs name the binary after its target platform).
 
 **Code signing and "unidentified developer" warnings.** The same for both. macOS needs a Developer ID certificate and notarization to avoid the Gatekeeper warning, and Windows needs a code-signing certificate to avoid SmartScreen. Neither tool avoids this. Both need certificates stored as secrets in CI. Whether and how much the certificates cost was not researched here; budget for it. Unsigned installers will work but show a warning, which is acceptable for the first releases if the README says so.
 
-**Auto-update.** *Electron* (with electron-builder's updater): supported, but it needs signed macOS builds, the zip target on macOS, and NSIS on Windows. *Tauri:* has its own updater plugin with its own signing key, and a sidecar might need a separate update path, according to one developer write-up. I would not build auto-update in the first release for either.
+**Auto-update.** *Electron* (with electron-builder's updater): supported, but it needs signed macOS builds, the zip target on macOS, and NSIS on Windows. *Tauri:* has its own updater plugin with its own signing key, and a sidecar might need a separate update path, according to one developer write-up. Auto-update is not planned for the first release with either tool.
 
 **How much new code.** *Electron:* a small main file that starts the server and opens a window, plus packaging config. *Tauri:* a Rust shell, a sidecar build step, and the packaging config, in a language the project doesn't use today.
 
@@ -46,9 +46,9 @@ Today you need Node.js and a terminal to run the app. We want a double-click ins
 Most of the experience is the same either way: double-click an installer, get a normal app window with the same screens, data kept on the computer, and the same "unidentified developer" warnings on macOS and Windows until the installers are signed. The differences:
 
 - **Download size.** Electron's installer is large (roughly 100 MB or more). Tauri's is smaller, though a Node sidecar would add back much of that. This is a one-time cost, felt most on a slow connection or a small disk.
-- **Which web engine draws the screens.** Electron ships its own copy of Chromium, so the app looks and behaves the same on every computer. Tauri uses the web view the operating system provides. As far as I know, that is WebKit (Safari's engine) on macOS, Microsoft Edge's WebView2 on Windows and WebKitGTK on Linux. **That was not checked in this session**, so confirm it before relying on it. If it holds, the same screens could render slightly differently on each system, and a layout or accessibility fix on one system might not carry over to another.
+- **Which web engine draws the screens.** Electron ships its own copy of Chromium, so the app looks and behaves the same on every computer. Tauri uses the web view the operating system provides. That is believed to be WebKit (Safari's engine) on macOS, Microsoft Edge's WebView2 on Windows and WebKitGTK on Linux. **That has not been verified**, so confirm it before relying on it. If it holds, the same screens could render slightly differently on each system, and a layout or accessibility fix on one system might not carry over to another.
 - **Accessibility testing.** Stage 2 of the roadmap plans VoiceOver and Safari/Firefox testing ([#18](https://github.com/natalia-builds/search-pipeline-tracker-app/issues/18), [#19](https://github.com/natalia-builds/search-pipeline-tracker-app/issues/19)). With Electron, one Chromium build is what gets tested everywhere. With Tauri, each system's engine would need its own accessibility check.
-- **Speed and memory.** Tauri apps are often described as lighter. I found general claims but no measurements for an app like this, so it is not counted as a real difference here.
+- **Speed and memory.** Tauri apps are often described as lighter. Only general claims turned up, with no measurements for an app like this, so it is not counted as a real difference here.
 - **Updates.** Both have an update mechanism. For the first releases, people would most likely download the new installer by hand either way.
 
 ## Tradeoffs considered
