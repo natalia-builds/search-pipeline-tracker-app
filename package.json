@@ -15,6 +15,7 @@
     "build": "astro build",
     "desktop": "astro build && electron .",
     "dist": "astro build && electron-builder",
+    "icon": "electron scripts/render-icon.mjs docs/app-icon.svg build/icon.png",
     "test": "vitest run"
   },
   "dependencies": {

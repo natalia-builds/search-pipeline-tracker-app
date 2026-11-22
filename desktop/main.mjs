@@ -62,7 +62,15 @@ function fail(message) {
   app.quit();
 }
 
+// Running from the project (`npm run desktop`), show the app's icon in the macOS Dock. An installed app
+// gets its icon from its own bundle instead, and build/ isn't packed into it, so skip if the file isn't there.
+function showDockIcon() {
+  const iconFile = join(root, "build", "icon.png");
+  if (process.platform === "darwin" && existsSync(iconFile)) app.dock?.setIcon(iconFile);
+}
+
 app.whenReady().then(async () => {
+  showDockIcon();
   if (!existsSync(join(distDir, "index.html"))) return fail("The app has not been built yet. Run `npm run desktop`, which builds it first.");
   // The OS's per-user app-data folder (not the project folder), unless SPT_DATA_DIR says otherwise.
   const dataDir = desktopDataDir({ envDir: process.env.SPT_DATA_DIR, userDataDir: app.getPath("userData") });
