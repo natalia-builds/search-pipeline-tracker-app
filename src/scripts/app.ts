@@ -194,7 +194,7 @@ function sentTo(vid: string) {
   const parts: string[] = [];
   if (list.length) parts.push(`<span class="hint">Applications: ${list.map((a) => `<button class="link" data-act="openapp" data-id="${esc(a.id)}">${esc(a.company)}</button>`).join(", ")}</span>`);
   if (cs.length) parts.push(`<span class="hint">Shared with: ${cs.map((c) => `<button class="link" data-act="opencontact" data-id="${esc(c.id)}">${esc(c.name)}</button>`).join(", ")}</span>`);
-  return parts.join("");
+  return parts.length ? `<div class="sent-to">${parts.join("")}</div>` : "";
 }
 
 const versionOption = (v: { id: string; label: string; createdAt: string; note: string }, selected: boolean) =>
