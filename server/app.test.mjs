@@ -83,7 +83,14 @@ describe("saving and loading", () => {
     expect(db.write(JSON.stringify(lib({ v: 3 })), 2)).toBe(3);
     db.close();
     // Open the file directly: the first overwrite of the day is the one that is kept.
-    const snaps = new (require_sqlite())(join(dir, "snap", "tracker.sqlite")).prepare("SELECT json FROM snapshots").all();
+    // Close it afterwards: Windows can't delete the temporary folder while a database file is still open.
+    const check = new (require_sqlite())(join(dir, "snap", "tracker.sqlite"));
+    let snaps;
+    try {
+      snaps = check.prepare("SELECT json FROM snapshots").all();
+    } finally {
+      check.close();
+    }
     expect(snaps).toHaveLength(1);
     expect(JSON.parse(snaps[0].json).v).toBe(1);
   });
