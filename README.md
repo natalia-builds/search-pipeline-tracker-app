@@ -154,6 +154,7 @@ npm run build    # build the screens into dist/
 - `src/lib/`: the logic and its tests (formatting, comparing versions, checks, backups, PDFs, sample data). `serverStore.ts` is how the screens save through the server.
 - `src/scripts/app.ts`: the interactive page. `src/pages/index.astro`: the page shell. `src/styles/app.css`: styles.
 - `scripts/`: the `npm start` and `npm run dev` launchers.
+- `build/icon.png`: the app icon (drawn from `docs/app-icon.svg`; `npm run icon` redraws it). See [Building the installers](docs/installer.md#the-app-icon).
 - `desktop/`: the Electron window for `npm run desktop`. It runs the same local server and shows it in a window, saving to the operating system's app-data folder (see [Your data and backups](#your-data-and-backups)). The first run downloads Electron (about 100 MB or more), and it has only been tried on macOS.
 - [CLAUDE.md](CLAUDE.md): the project's principles and working rules
 

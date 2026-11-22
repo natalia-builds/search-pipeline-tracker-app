@@ -67,6 +67,16 @@ The config uses an "ad-hoc" signature (`identity: "-"` in `electron-builder.yml`
 
 Real signing and notarization need a paid Apple Developer Program membership and certificates kept as secrets in CI. That isn't decided or planned. It would be its own decision first.
 
+## The app icon
+
+The icon is a white page with three lines and a green check mark on a blue rounded square. The maintainer chose it, on 2026-11-21, from three drafts, and looked at the installed result and was happy with it. The other two drafts were the website's browser-tab icon enlarged (plain, and it reads as a white rectangle at 16 pixels) and three columns with fewer cards in each, like pipeline stages (it looks like books on a shelf at a glance and gets busy when small). The check mark adds green to the project's blue and white.
+
+- **`build/icon.png`** is the master image: 1024 by 1024 pixels with transparent corners. electron-builder reads it from `build/` by default and makes the macOS (`.icns`), Windows (`.ico`) and Linux icons from it. A single image is enough, per electron-builder's documentation, which asks for at least 512 pixels for macOS and 256 for Windows and Linux.
+- **`docs/app-icon.svg`** is the source it is drawn from. It is kept out of `build/` on purpose, because a community report says extra images in that folder can confuse which one electron-builder picks.
+- **The margin is deliberate.** The blue square is 824 pixels wide on the 1024 pixel canvas, with transparent space around it, the way macOS app icons are normally drawn, so it doesn't look oversized next to other apps in the Dock.
+- **To change it,** edit `docs/app-icon.svg` and run `npm run icon`, which redraws `build/icon.png`. Don't use macOS's QuickLook (`qlmanage`) to make the PNG: it fills the transparent areas with white, and the icon would show a white square around it.
+- **`npm run desktop`** shows the same icon in the macOS Dock. An installed app gets it from its own bundle.
+
 ## What was tested
 
 On macOS 26.7, Apple Silicon, with the `.dmg` built by `npm run dist`:
@@ -81,7 +91,7 @@ To avoid touching real data, these checks started the app with Electron's `--use
 ## Known gaps
 
 - **Not tested:** a downloaded copy going through Gatekeeper (macOS's check), Intel Macs, running the Windows and Linux installers on Windows and Linux, and macOS versions other than 26.7.
-- **No icon yet.** The app uses Electron's default icon.
+- **The icon was only seen on macOS.** The maintainer looked at it there on 2026-11-21 and it looked good, but exactly which views (Finder, the Dock, the `.dmg` window) wasn't recorded, and no screenshots were taken. On Windows and Linux it is only known that the build uses the same image. The release workflow hasn't been run since the icon was added.
 - **No updates.** To update, build or download the new installer and replace the app. Your data is kept.
 - **Ad-hoc signing and library validation.** electron-builder warns that an ad-hoc signature with the hardened runtime can stop an app launching unless an entitlement is added. It launched fine here. If a future macOS blocks it, that entitlement is the first thing to look at.
 - **Audit warnings.** `npm audit` reports 6 moderate findings, all one issue in `minimatch` (a denial-of-service bug), pulled in by electron-builder's build tooling. `npm audit --omit=dev` reports none, nothing from it is inside the installer, and the build only runs on your computer or CI. npm's suggested fix is a downgrade to electron-builder 25.1.0, which is a breaking change, so it was not applied. Revisit when electron-builder updates it.
