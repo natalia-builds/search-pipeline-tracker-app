@@ -166,6 +166,9 @@ data/
 *.sqlite3
 backup*.json
 
+# macOS Finder folder-view settings (created when a folder is opened in Finder)
+.DS_Store
+
 # editor/tool settings with paths on one person's machine
 .claude/
 .astro/
