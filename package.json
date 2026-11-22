@@ -14,7 +14,7 @@
     "dev": "node scripts/dev.mjs",
     "build": "astro build",
     "desktop": "astro build && electron .",
-    "dist": "astro build && electron-builder --mac dmg",
+    "dist": "astro build && electron-builder",
     "test": "vitest run"
   },
   "dependencies": {

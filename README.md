@@ -69,7 +69,7 @@ A version you've sent somewhere can't be deleted, so you always have a record of
 
 Live progress for each stage is on the [milestones page](https://github.com/natalia-builds/search-pipeline-tracker-app/milestones).
 
-1. **A double-click installer**, so people don't need Node.js or a terminal. First a decision on the tool, Electron or Tauri ([#7](https://github.com/natalia-builds/search-pipeline-tracker-app/issues/7)). Then it's built in small steps: starting the server from code ([#8](https://github.com/natalia-builds/search-pipeline-tracker-app/issues/8)), a desktop window ([#9](https://github.com/natalia-builds/search-pipeline-tracker-app/issues/9)), saving data in the operating system's app-data folder ([#10](https://github.com/natalia-builds/search-pipeline-tracker-app/issues/10)), a first local build ([#11](https://github.com/natalia-builds/search-pipeline-tracker-app/issues/11)), installers for macOS, Windows and Linux built on each release ([#12](https://github.com/natalia-builds/search-pipeline-tracker-app/issues/12)), and the README update ([#13](https://github.com/natalia-builds/search-pipeline-tracker-app/issues/13)).
+1. **A double-click installer**, so people don't need Node.js or a terminal. First a decision on the tool, Electron or Tauri ([#7](https://github.com/natalia-builds/search-pipeline-tracker-app/issues/7)). Then it's built in small steps: starting the server from code ([#8](https://github.com/natalia-builds/search-pipeline-tracker-app/issues/8)), a desktop window ([#9](https://github.com/natalia-builds/search-pipeline-tracker-app/issues/9)), saving data in the operating system's app-data folder ([#10](https://github.com/natalia-builds/search-pipeline-tracker-app/issues/10)), a first local build ([#11](https://github.com/natalia-builds/search-pipeline-tracker-app/issues/11)), installers for macOS, Windows and Linux built on each release ([#12](https://github.com/natalia-builds/search-pipeline-tracker-app/issues/12)), an icon for the app ([#27](https://github.com/natalia-builds/search-pipeline-tracker-app/issues/27)), and the README update ([#13](https://github.com/natalia-builds/search-pipeline-tracker-app/issues/13)).
 2. **Broader testing and accessibility.** Tests on Windows and macOS in CI ([#14](https://github.com/natalia-builds/search-pipeline-tracker-app/issues/14)) and a start-up smoke test ([#15](https://github.com/natalia-builds/search-pipeline-tracker-app/issues/15)). An automated accessibility check ([#16](https://github.com/natalia-builds/search-pipeline-tracker-app/issues/16)) and a written checklist ([#17](https://github.com/natalia-builds/search-pipeline-tracker-app/issues/17)). Then testing by a person with VoiceOver ([#18](https://github.com/natalia-builds/search-pipeline-tracker-app/issues/18)) and in Safari and Firefox ([#19](https://github.com/natalia-builds/search-pipeline-tracker-app/issues/19)), and an update to this README with what was verified ([#20](https://github.com/natalia-builds/search-pipeline-tracker-app/issues/20)).
 
 Beyond these, nothing is committed.
@@ -141,7 +141,7 @@ npm install      # download the packages the project needs
 npm run dev      # app with live reload at http://localhost:4321 (server on 4322)
 npm start        # build once, then run the app as people will use it
 npm run desktop  # build, then open the app in its own window (Electron)
-npm run dist     # build a macOS installer (.dmg) into release/. Unsigned, Apple Silicon only
+npm run dist     # build an installer for the system you're on into release/ (unsigned)
 npm test         # run the automated tests
 npm run build    # build the screens into dist/
 ```
@@ -149,7 +149,7 @@ npm run build    # build the screens into dist/
 ### Where things live
 
 - [Resume formatting guide](docs/formatting-your-resume.md): the marks the editor understands
-- [Building the macOS installer](docs/installer.md): how `npm run dist` works, what the first launch of an unsigned app looks like, and what was and wasn't tested. `electron-builder.yml` is its configuration.
+- [Building the installers](docs/installer.md): how `npm run dist` works, how pushing a version tag builds and publishes installers for macOS, Windows and Linux (`.github/workflows/release.yml`), what the first launch of an unsigned app looks like, and what was and wasn't tested. `electron-builder.yml` is its configuration.
 - `server/app.mjs`: the local server. It serves the built app and saves the library through `GET` and `PUT /api/library`, with the checks that keep other websites out. `server/start.mjs` starts it from code, and `server/index.mjs` is the command-line start.
 - `src/lib/`: the logic and its tests (formatting, comparing versions, checks, backups, PDFs, sample data). `serverStore.ts` is how the screens save through the server.
 - `src/scripts/app.ts`: the interactive page. `src/pages/index.astro`: the page shell. `src/styles/app.css`: styles.
