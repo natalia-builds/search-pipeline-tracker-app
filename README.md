@@ -132,6 +132,7 @@ Built with [Astro](https://astro.build) and TypeScript for the screens, a small 
 npm install      # download the packages the project needs
 npm run dev      # app with live reload at http://localhost:4321 (server on 4322)
 npm start        # build once, then run the app as people will use it
+npm run desktop  # build, then open the app in its own window (Electron). Not an installer yet
 npm test         # run the automated tests
 npm run build    # build the screens into dist/
 ```
@@ -143,6 +144,7 @@ npm run build    # build the screens into dist/
 - `src/lib/`: the logic and its tests (formatting, comparing versions, checks, backups, PDFs, sample data). `serverStore.ts` is how the screens save through the server.
 - `src/scripts/app.ts`: the interactive page. `src/pages/index.astro`: the page shell. `src/styles/app.css`: styles.
 - `scripts/`: the `npm start` and `npm run dev` launchers.
+- `desktop/`: the Electron window for `npm run desktop`. It runs the same local server and shows it in a window. The first run downloads Electron (about 100 MB or more), and it has only been tried on macOS.
 - [CLAUDE.md](CLAUDE.md): the project's principles and working rules
 
 ### Contributing
