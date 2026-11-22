@@ -1,0 +1,83 @@
+# Builds the installers and publishes a GitHub release when a version tag is pushed.
+#
+# To release: bump "version" in package.json, merge it, then tag that commit and push the tag:
+#   git tag v0.2.0 && git push origin v0.2.0
+# A tag with a dash in it (for example v0.2.0-rc.1) is published as a prerelease.
+# See docs/installer.md.
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+# Everything is read-only unless a job asks for more. Only the `release` job can write.
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build (${{ matrix.os }})
+    strategy:
+      # Let every system finish, so one failure doesn't hide what happens on the others.
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        # The same shell on every system, so the steps below mean the same thing everywhere.
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      # The tests come first: if they fail on this system, no installer is built for it,
+      # and the release job below never runs.
+      - run: npm test
+      # `--publish never` makes electron-builder only build. Publishing is the release job's work.
+      - run: npm run dist -- --publish never
+      - uses: actions/upload-artifact@v4
+        with:
+          name: installer-${{ matrix.os }}
+          # .dmg is macOS, .exe is Windows, .AppImage is Linux. Fail if this system produced none.
+          path: |
+            release/*.dmg
+            release/*.exe
+            release/*.AppImage
+          if-no-files-found: error
+
+  release:
+    name: Publish the release
+    # Only runs if every build above succeeded, which means every system's tests passed.
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: installers
+          pattern: installer-*
+          merge-multiple: true
+      - name: Write checksums
+        run: |
+          cd installers
+          sha256sum * > SHA256SUMS.txt
+          cat SHA256SUMS.txt
+      - name: Create the release, or add the files to one that already exists
+        run: |
+          set -euo pipefail
+          if gh release view "$GITHUB_REF_NAME" > /dev/null 2>&1; then
+            gh release upload "$GITHUB_REF_NAME" installers/* --clobber
+          else
+            flags=(--title "$GITHUB_REF_NAME" --generate-notes --verify-tag)
+            # A dash in the tag (v0.2.0-rc.1) means a prerelease.
+            case "$GITHUB_REF_NAME" in *-*) flags+=(--prerelease) ;; esac
+            gh release create "$GITHUB_REF_NAME" installers/* "${flags[@]}"
+          fi

@@ -141,7 +141,7 @@ npm install      # download the packages the project needs
 npm run dev      # app with live reload at http://localhost:4321 (server on 4322)
 npm start        # build once, then run the app as people will use it
 npm run desktop  # build, then open the app in its own window (Electron)
-npm run dist     # build a macOS installer (.dmg) into release/. Unsigned, Apple Silicon only
+npm run dist     # build an installer for the system you're on into release/ (unsigned)
 npm test         # run the automated tests
 npm run build    # build the screens into dist/
 ```
@@ -149,7 +149,7 @@ npm run build    # build the screens into dist/
 ### Where things live
 
 - [Resume formatting guide](docs/formatting-your-resume.md): the marks the editor understands
-- [Building the macOS installer](docs/installer.md): how `npm run dist` works, what the first launch of an unsigned app looks like, and what was and wasn't tested. `electron-builder.yml` is its configuration.
+- [Building the installers](docs/installer.md): how `npm run dist` works, how pushing a version tag builds and publishes installers for macOS, Windows and Linux (`.github/workflows/release.yml`), what the first launch of an unsigned app looks like, and what was and wasn't tested. `electron-builder.yml` is its configuration.
 - `server/app.mjs`: the local server. It serves the built app and saves the library through `GET` and `PUT /api/library`, with the checks that keep other websites out. `server/start.mjs` starts it from code, and `server/index.mjs` is the command-line start.
 - `src/lib/`: the logic and its tests (formatting, comparing versions, checks, backups, PDFs, sample data). `serverStore.ts` is how the screens save through the server.
 - `src/scripts/app.ts`: the interactive page. `src/pages/index.astro`: the page shell. `src/styles/app.css`: styles.

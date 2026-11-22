@@ -23,3 +23,10 @@ mac:
   # must be present"; with "-" it reports "valid on disk". "-" also stops electron-builder from picking up
   # a certificate that happens to be in someone's keychain. See docs/installer.md.
   identity: "-"
+win:
+  # A one-click .exe installer. Not signed, so Windows shows its SmartScreen warning on a downloaded copy.
+  target: nsis
+linux:
+  # An AppImage: a single file that runs on most Linux desktops without installing anything.
+  target: AppImage
+  category: Office
