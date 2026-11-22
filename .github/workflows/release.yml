@@ -1,8 +1,8 @@
 # Builds the installers and publishes a GitHub release when a version tag is pushed.
 #
 # To release: bump "version" in package.json, merge it, then tag that commit and push the tag:
-#   git tag v0.2.0 && git push origin v0.2.0
-# A tag with a dash in it (for example v0.2.0-rc.1) is published as a prerelease.
+#   git tag v1.0.0 && git push origin v1.0.0
+# A tag with a dash in it (for example v1.0.0-rc.1) is published as a prerelease.
 # See docs/installer.md.
 name: Release
 
@@ -77,7 +77,7 @@ jobs:
             gh release upload "$GITHUB_REF_NAME" installers/* --clobber
           else
             flags=(--title "$GITHUB_REF_NAME" --generate-notes --verify-tag)
-            # A dash in the tag (v0.2.0-rc.1) means a prerelease.
+            # A dash in the tag (v1.0.0-rc.1) means a prerelease.
             case "$GITHUB_REF_NAME" in *-*) flags+=(--prerelease) ;; esac
             gh release create "$GITHUB_REF_NAME" installers/* "${flags[@]}"
           fi
