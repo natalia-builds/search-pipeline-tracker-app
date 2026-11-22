@@ -17,12 +17,14 @@ A free, open-source job search tracker that people download and run on their own
 - `src/scripts/app.ts`: the interactive page (rendering and event handling). Per-device conveniences (open section, unsaved drafts) stay in the browser's `localStorage`; the library does not.
 - `src/pages/index.astro`: the page shell. `src/styles/app.css`: styles and color tokens.
 - `scripts/start.mjs` (`npm start`) and `scripts/dev.mjs` (`npm run dev`).
+- `desktop/main.mjs`: the Electron shell (`npm run desktop`). It starts the server with `startServer` on a free port and shows it in one window. Keep its security settings: `contextIsolation`, no `nodeIntegration`, `sandbox`, no preload script, navigation limited to the app's own address, external links opened in the default browser, remote requests cancelled, permissions denied. `desktop/urls.mjs` holds the address rules, with tests in `desktop/urls.test.mjs`. The decision to use Electron is in `docs/decisions/installer.md`.
 - `docs/`: the README screenshot and the resume formatting guide. The README follows the same structure as the maintainer's other repos (Status, who it's for, what it does, design decisions and tradeoffs, roadmap, limitations, then install and developer sections) and is written so a recruiter or hiring manager can skim it. State only facts that can be verified, and keep "Status" and "Limitations" honest when things change.
 
 ## Running it
 
 - `npm start` builds once, then serves `dist/` and the API on `http://localhost:4321`.
 - `npm run dev` runs the server on 4322 and Astro's live-reload page on 4321, which proxies `/api` to the server.
+- `npm run desktop` builds, then opens the app in an Electron window on a free port. The first run downloads Electron's binary (about 100 MB or more). It still saves to `data/` (or `SPT_DATA_DIR`). It has only been tried on macOS.
 - Needs Node 22.23.4 or newer (Astro's minimum; `node:sqlite` itself needs 22.13). Scripts pass `--disable-warning=ExperimentalWarning` to hide its notice.
 
 ## Accessibility
