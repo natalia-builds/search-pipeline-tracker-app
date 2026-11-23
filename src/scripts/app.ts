@@ -6,6 +6,7 @@ import { boldedMetrics, bulletCount, esc, plain, renderMarkdown, wordCount } fro
 import { sampleLibrary } from "../lib/sample";
 import { openServerStore } from "../lib/serverStore";
 import { isStalePageError, STALE_PAGE_MESSAGE } from "../lib/stale";
+import { nextVersionName } from "../lib/versionNames";
 import { backupFilename, exportBackup, loadLibrary, parseBackup, saveLibrary, STORAGE_KEY, type KeyValueStore } from "../lib/storage";
 import { BONUS_OPTIONS, emptyLibrary, isActive, MAX_PAGE_LIMIT, STATUSES, type Application, type Contact, type Library, type Settings } from "../lib/types";
 
@@ -325,7 +326,7 @@ function resumeHtml() {
   } else if (S.tab === "edit") {
     const draft = pref.get(DRAFT);
     const text = draft ?? (cur ? cur.content : "");
-    const nextN = (vs.slice(-1)[0]?.n || 0) + 1;
+    const nextName = nextVersionName(vs.map((v) => v.label));
     const openApps = lib.applications.filter((a) => isActive(a.status));
     body = `<div class="cols"><div class="editor">
         ${draft != null && cur && draft !== cur.content ? `<div class="banner"><span>Unsaved draft based on ${esc(cur.label)}. Drafts stay in this browser until you save a version.</span><button class="btn small" data-act="discard">Discard draft</button></div>` : ""}
@@ -334,7 +335,7 @@ function resumeHtml() {
         <p class="hint" id="edHint">In the editor, the Tab key types a tab. To leave the editor, press Esc and then Tab, or press Shift+Tab.</p>
         <textarea id="ed" spellcheck="true" aria-describedby="edHint">${esc(text)}</textarea>
         <div class="savebar">
-          <label>Version name<input class="f" id="vLabel" value="v${nextN}"></label>
+          <label>Version name<input class="f" id="vLabel" value="${esc(nextName)}"></label>
           <label>What changed?<input class="f" id="vNote" placeholder="e.g. Led with payments results"></label>
           <label>Tailored for<select class="f" id="vApp"><option value="">Not tied to an application</option>${openApps.map((a) => `<option value="${esc(a.id)}">${esc(a.company)} - ${esc(a.role)}</option>`).join("")}</select></label>
           <button class="btn primary" data-act="savev">Save version</button>
@@ -539,7 +540,7 @@ function headlineHtml() {
       <textarea id="hlEd" maxlength="400" aria-describedby="hlCount">${esc(text)}</textarea>
       <div class="bar"><span class="count${len > HEADLINE_MAX ? " over" : ""}" id="hlCount">${len} of ${HEADLINE_MAX} characters</span></div>
       <div class="savebar three">
-        <label>Version name<input class="f" id="hlLabel" value="v${(hs.slice(-1)[0]?.n || 0) + 1}"></label>
+        <label>Version name<input class="f" id="hlLabel" value="${esc(nextVersionName(hs.map((h) => h.label)))}"></label>
         <label>Why the change?<input class="f" id="hlNote" placeholder="e.g. Lead with payments for fintech roles"></label>
         <button class="btn primary" data-act="hlsave">Save version</button></div>
     </div><div id="hlSide" class="side">${checksCard(hlChecks(text))}</div></div>`;
@@ -774,7 +775,7 @@ function saveVersion() {
   const n = (versions().slice(-1)[0]?.n || 0) + 1;
   const id = newId();
   const now = new Date().toISOString();
-  const name = label || "v" + n;
+  const name = label || nextVersionName(versions().map((v) => v.label));
   const ok = commit(
     (l) => {
       l.versions.push({ id, n, label: name, note: note || (app ? `Tailored for ${app.company}` : ""), content, createdAt: now });
@@ -879,7 +880,7 @@ function saveHeadline() {
   const cur = curHeadline();
   if (cur && cur.text === text) return announce(`Same as ${cur.label}.`);
   const n = (hlSorted().slice(-1)[0]?.n || 0) + 1;
-  const label = $<HTMLInputElement>("#hlLabel")!.value.trim() || "v" + n;
+  const label = $<HTMLInputElement>("#hlLabel")!.value.trim() || nextVersionName(hlSorted().map((h) => h.label));
   const note = $<HTMLInputElement>("#hlNote")!.value.trim();
   const id = newId();
   const ok = commit(
