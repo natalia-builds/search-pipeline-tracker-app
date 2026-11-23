@@ -38,6 +38,7 @@ Everything must meet **WCAG 2.2 Level AA**: real HTML controls, full keyboard us
 ## Workflow
 
 - Never commit directly to `main`. Use a short-lived branch and a pull request with one purpose.
+- GitHub enforces that: a ruleset named "Protect main" (repository Settings, Rules) requires a pull request, blocks force pushes and deletion of `main`, applies to the maintainer too, and requires the six checks from `.github/workflows/test.yml` to pass: `Test (ubuntu-latest, Node 22.23.4)`, `Test (ubuntu-latest, Node 24)`, `Test (windows-latest, Node 22.23.4)`, `Test (windows-latest, Node 24)`, `Test (macos-latest, Node 22.23.4)` and `Test (macos-latest, Node 24)`. It requires no approving reviews, because the maintainer is the only reviewer. The checks are required by their exact names, so renaming the job, the operating systems or the Node versions in `test.yml` leaves the old names required and blocks every merge until the ruleset is edited to match. Release tags (`v*`) are not affected.
 - Run `npm test` and `npm run build` before every commit.
 - Check changes in a browser: awkward inputs, a 375px phone width, and dark mode.
 - This repository is public. Never commit personal resume data, the `data/` folder, backups, or secrets.
