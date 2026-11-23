@@ -55,6 +55,8 @@ What the workflow does:
 
 **The releases so far.** `v0.1.0` was made by hand before any installer existed. It has no installers and points at an older commit, and it stays as history. **`v1.0.0`**, published on 2026-11-21, is the first release with installers. The maintainer chose that number, and there was no prerelease first. The workflow built it from `main` (commit `bc03a06`) and attached the `.dmg`, the `.exe`, the `.AppImage` and `SHA256SUMS.txt`. In that run the tests passed on all three systems (all 8 test files each), and each build log was free of the "default Electron icon" message.
 
+**`v1.1.0`** followed on 2026-11-22, after two prereleases. `v1.1.0-rc.1` (from `main` after the version bump in pull request 47) was opened by the maintainer, who found three problems that became issues #48, #49 and #50. `v1.1.0-rc.2` (commit `8e57d44`) contained their fixes. All three builds and the tests passed, its macOS `.dmg` matched the published checksum, and the maintainer tried it and was satisfied. `v1.1.0` has the same code as `v1.1.0-rc.2`; only the version number in `package.json` changed. The tests in the release workflow ran 105 tests across 10 files on each system for `v1.1.0-rc.2`.
+
 **Windows and Linux are untested by hand.** Nobody has run the Windows or Linux installers on a Windows or Linux computer. The workflow only proves they build. The notes below come from general knowledge of how these systems behave, not from anything run for this project, so treat them as expectations:
 
 - **Windows:** a downloaded, unsigned installer is likely to show Microsoft's SmartScreen warning ("Windows protected your PC"), with a **More info** link that leads to **Run anyway**.
