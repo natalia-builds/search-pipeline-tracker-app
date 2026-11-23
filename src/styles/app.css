@@ -133,6 +133,24 @@ textarea#ed { width: 100%; min-height: 60vh; resize: vertical; padding: 14px; bo
 @media (max-width: 700px) { .savebar, .savebar.three { grid-template-columns: minmax(0, 1fr); } }
 .f { padding: 8px 10px; border: 1px solid var(--field-line); border-radius: 6px; background: var(--panel); min-width: 0; width: 100%; }
 .f[aria-invalid="true"] { border-color: var(--fail); border-width: 2px; }
+/* Dropdowns draw their own arrow, because the browser's arrow can't be moved away from the edge.
+   It is a small inline image, so nothing is requested. Its color matches the text color (--ink)
+   in light and dark mode. */
+select.f {
+  appearance: none;
+  padding-right: 34px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5 6 6.5 11 1.5' fill='none' stroke='%232b2f33' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 12px 8px;
+}
+@media (prefers-color-scheme: dark) {
+  select.f { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5 6 6.5 11 1.5' fill='none' stroke='%23e4e9ef' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); }
+}
+/* In Windows high-contrast mode, background images are removed, so keep the browser's own arrow. */
+@media (forced-colors: active) {
+  select.f { appearance: auto; padding-right: 10px; background-image: none; }
+}
 
 .hist { display: grid; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; }
 .hrow { display: grid; grid-template-columns: 56px minmax(0, 1fr); gap: 4px 14px; padding: 12px 14px; border-top: 1px solid var(--line); }
@@ -218,6 +236,8 @@ textarea#hlEd { width: 100%; min-height: 96px; resize: vertical; padding: 12px; 
 @media (forced-colors: active) { .dot { forced-color-adjust: none; } .mtab[aria-current="page"], .tab[aria-current="true"] { text-decoration: underline; } }
 .inline-select { display: flex; gap: 6px; align-items: center; font-size: 14px; }
 .inline-select .f { width: auto; padding: 6px 8px; }
+.inline-select select.f { padding-right: 32px; }
+@media (forced-colors: active) { .inline-select select.f { padding-right: 8px; } }
 
 /* Formatting help in the resume editor */
 .format-help { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; }
