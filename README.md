@@ -36,6 +36,8 @@ The [latest release](https://github.com/natalia-builds/search-pipeline-tracker-a
 - A person has opened only the macOS installer, and that was a copy built on the maintainer's own Mac (macOS 26.7, Apple silicon). Nobody has yet run the Windows or Linux installer on Windows or Linux, or opened the published macOS file after downloading it.
 - The installers aren't signed, so macOS and Windows are expected to warn about an unidentified developer the first time. [How to use it](#how-to-use-it) has the steps.
 
+**Changes since 1.0.0.** Three small improvements are merged into the source code but are not in the 1.0.0 installers: dropdown arrows have more room from the edge of the box, the suggested version name follows the numbers shown in History, and saving a version with a name that is already used is refused. They arrive with the next release. Their automated tests passed on Linux, Windows and macOS in CI, and they were checked in a browser on macOS. No installer that contains them has been built or opened.
+
 ## Who it's for and the problem it solves
 
 Anyone running a job search who tailors their resume for each role. A search produces many versions of a resume, many applications, and people who passed the resume along. It gets hard to say which version a company, or a former colleague, actually has. A spreadsheet can list where you applied, but it can't hold each version or compare them. Hosted trackers keep your resume and your contacts' details on someone else's servers.
@@ -78,11 +80,10 @@ A version you've sent somewhere can't be deleted, so you always have a record of
 
 Live progress for each stage is on the [milestones page](https://github.com/natalia-builds/search-pipeline-tracker-app/milestones).
 
-The first stage, a double-click installer for macOS, Windows and Linux, shipped as version 1.0.0 (see [Status](#status)). The stages that remain:
+The first stage, a double-click installer for macOS, Windows and Linux, shipped as version 1.0.0 (see [Status](#status)). The fourth stage, small improvements found while testing the downloaded app, is finished in the source code but isn't in an installer yet: more room between the dropdown arrow and the edge of the box ([#39](https://github.com/natalia-builds/search-pipeline-tracker-app/issues/39)), a default version name that follows the numbers shown in History ([#40](https://github.com/natalia-builds/search-pipeline-tracker-app/issues/40)), and a check that stops two versions from sharing a name ([#41](https://github.com/natalia-builds/search-pipeline-tracker-app/issues/41)). The stages that remain:
 
 2. **Broader testing and accessibility.** A start-up smoke test ([#15](https://github.com/natalia-builds/search-pipeline-tracker-app/issues/15)). Running the tests on Windows and macOS in CI ([#14](https://github.com/natalia-builds/search-pipeline-tracker-app/issues/14)) is done. An automated accessibility check ([#16](https://github.com/natalia-builds/search-pipeline-tracker-app/issues/16)) and a written checklist ([#17](https://github.com/natalia-builds/search-pipeline-tracker-app/issues/17)). Then testing by a person with VoiceOver ([#18](https://github.com/natalia-builds/search-pipeline-tracker-app/issues/18)) and in Safari and Firefox ([#19](https://github.com/natalia-builds/search-pipeline-tracker-app/issues/19)), and an update to this README with what was verified ([#20](https://github.com/natalia-builds/search-pipeline-tracker-app/issues/20)).
 3. **Signed installers.** A written decision on whether and how to sign the installers, so macOS and Windows stop warning about an unidentified developer ([#34](https://github.com/natalia-builds/search-pipeline-tracker-app/issues/34)). Signing itself is only planned if that decision is to go ahead. It may be "not now".
-4. **Improvements from first testing.** Small changes found while testing the downloaded app: more room between the dropdown arrow and the edge of the box ([#39](https://github.com/natalia-builds/search-pipeline-tracker-app/issues/39)), a default version name that follows the numbers shown in History ([#40](https://github.com/natalia-builds/search-pipeline-tracker-app/issues/40)), and a check that stops two versions from sharing a name ([#41](https://github.com/natalia-builds/search-pipeline-tracker-app/issues/41)).
 
 Beyond these, nothing is committed.
 
