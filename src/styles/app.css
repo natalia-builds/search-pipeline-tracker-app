@@ -127,12 +127,17 @@ header.top p { margin: 0; color: var(--muted); }
 .editor { display: grid; gap: 8px; min-width: 0; }
 .field-label { font-weight: 600; font-size: 14px; }
 textarea#ed { width: 100%; min-height: 60vh; resize: vertical; padding: 14px; border: 1px solid var(--field-line); border-radius: 6px; background: var(--sheet); font-family: var(--font-mono); font-size: 13px; line-height: 1.6; }
-.savebar { display: grid; grid-template-columns: 110px minmax(0, 1fr) minmax(0, 220px) auto; gap: 8px; align-items: end; }
-.savebar.three { grid-template-columns: 110px minmax(0, 1fr) auto; }
-.savebar label { display: grid; gap: 4px; font-size: 13px; color: var(--muted); min-width: 0; }
-@media (max-width: 700px) { .savebar, .savebar.three { grid-template-columns: minmax(0, 1fr); } }
+/* Version name sits on its own row so its error message can go directly under it. */
+.namebar { display: grid; gap: 4px; }
+.namebar label { max-width: 280px; }
+.savebar { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 220px) auto; gap: 8px; align-items: end; }
+.savebar.three { grid-template-columns: minmax(0, 1fr) auto; }
+.savebar label, .namebar label { display: grid; gap: 4px; font-size: 13px; color: var(--muted); min-width: 0; }
+@media (max-width: 700px) { .savebar, .savebar.three { grid-template-columns: minmax(0, 1fr); } .namebar label { max-width: none; } }
 .f { padding: 8px 10px; border: 1px solid var(--field-line); border-radius: 6px; background: var(--panel); min-width: 0; width: 100%; }
 .f[aria-invalid="true"] { border-color: var(--fail); border-width: 2px; }
+/* The blue focus ring would hide the red border, so an invalid box gets a red ring too. */
+.f[aria-invalid="true"]:focus-visible { outline-color: var(--fail); }
 /* Dropdowns draw their own arrow, because the browser's arrow can't be moved away from the edge.
    It is a small inline image, so nothing is requested. Its color matches the text color (--ink)
    in light and dark mode. */
@@ -231,6 +236,8 @@ textarea#hlEd { width: 100%; min-height: 96px; resize: vertical; padding: 12px; 
 .settings .field { display: grid; gap: 4px; max-width: 640px; }
 .field-error { margin: 0; color: var(--fail); font-weight: 500; font-size: 14px; }
 .field-error:empty { display: none; }
+/* When the page scrolls a message into view, leave a little room below it. */
+.field-error { scroll-margin-bottom: 16px; }
 
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; scroll-behavior: auto !important; } }
 @media (forced-colors: active) { .dot { forced-color-adjust: none; } .mtab[aria-current="page"], .tab[aria-current="true"] { text-decoration: underline; } }
