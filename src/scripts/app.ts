@@ -6,7 +6,7 @@ import { boldedMetrics, bulletCount, esc, plain, renderMarkdown, wordCount } fro
 import { sampleLibrary } from "../lib/sample";
 import { openServerStore } from "../lib/serverStore";
 import { isStalePageError, STALE_PAGE_MESSAGE } from "../lib/stale";
-import { nextVersionName } from "../lib/versionNames";
+import { isNameTaken, nextVersionName } from "../lib/versionNames";
 import { backupFilename, exportBackup, loadLibrary, parseBackup, saveLibrary, STORAGE_KEY, type KeyValueStore } from "../lib/storage";
 import { BONUS_OPTIONS, emptyLibrary, isActive, MAX_PAGE_LIMIT, STATUSES, type Application, type Contact, type Library, type Settings } from "../lib/types";
 
@@ -164,6 +164,28 @@ function announce(msg: string) {
   window.setTimeout(() => (el.textContent = msg), 30);
   window.clearTimeout(announceTimer);
   announceTimer = window.setTimeout(() => (el.textContent = ""), 8000);
+}
+
+/* ---------- version names ---------- */
+// Refuses a version name that is already used: shows the error under the box, links it to the
+// box, moves focus there and announces it. Returns true when the save must stop.
+function rejectDuplicateName(input: HTMLInputElement, name: string, existingNames: string[]): boolean {
+  if (!isNameTaken(existingNames, name)) return false;
+  const message = `${name.trim()} is already used by another version. Choose a different name.`;
+  const error = document.getElementById(input.id + "-err");
+  if (error) error.textContent = message;
+  input.setAttribute("aria-invalid", "true");
+  input.focus();
+  input.select();
+  announce(message);
+  return true;
+}
+
+// Clears that error as soon as the person changes the name.
+function clearNameError(input: HTMLInputElement) {
+  input.removeAttribute("aria-invalid");
+  const error = document.getElementById(input.id + "-err");
+  if (error) error.textContent = "";
 }
 
 /* ---------- shared pieces ---------- */
@@ -335,11 +357,12 @@ function resumeHtml() {
         <p class="hint" id="edHint">In the editor, the Tab key types a tab. To leave the editor, press Esc and then Tab, or press Shift+Tab.</p>
         <textarea id="ed" spellcheck="true" aria-describedby="edHint">${esc(text)}</textarea>
         <div class="savebar">
-          <label>Version name<input class="f" id="vLabel" value="${esc(nextName)}"></label>
+          <label>Version name<input class="f" id="vLabel" value="${esc(nextName)}" aria-describedby="vLabel-err"></label>
           <label>What changed?<input class="f" id="vNote" placeholder="e.g. Led with payments results"></label>
           <label>Tailored for<select class="f" id="vApp"><option value="">Not tied to an application</option>${openApps.map((a) => `<option value="${esc(a.id)}">${esc(a.company)} - ${esc(a.role)}</option>`).join("")}</select></label>
           <button class="btn primary" data-act="savev">Save version</button>
         </div>
+        <p class="field-error" id="vLabel-err"></p>
       </div><div id="liveSide">${sideHtml(text)}</div></div>`;
   } else if (S.tab === "history" && cur) {
     body = `<div class="hist">${vs
@@ -540,9 +563,10 @@ function headlineHtml() {
       <textarea id="hlEd" maxlength="400" aria-describedby="hlCount">${esc(text)}</textarea>
       <div class="bar"><span class="count${len > HEADLINE_MAX ? " over" : ""}" id="hlCount">${len} of ${HEADLINE_MAX} characters</span></div>
       <div class="savebar three">
-        <label>Version name<input class="f" id="hlLabel" value="${esc(nextVersionName(hs.map((h) => h.label)))}"></label>
+        <label>Version name<input class="f" id="hlLabel" value="${esc(nextVersionName(hs.map((h) => h.label)))}" aria-describedby="hlLabel-err"></label>
         <label>Why the change?<input class="f" id="hlNote" placeholder="e.g. Lead with payments for fintech roles"></label>
         <button class="btn primary" data-act="hlsave">Save version</button></div>
+      <p class="field-error" id="hlLabel-err"></p>
     </div><div id="hlSide" class="side">${checksCard(hlChecks(text))}</div></div>`;
   }
   if (!cur) return head + editor + (S.hlEditing ? "" : `<div class="empty-state"><h3>No headline saved yet</h3><p>Paste your current LinkedIn headline as v1, then save a new version each time you change it.</p><button class="btn primary" data-act="hlnew">Add your headline</button></div>`);
@@ -775,7 +799,9 @@ function saveVersion() {
   const n = (versions().slice(-1)[0]?.n || 0) + 1;
   const id = newId();
   const now = new Date().toISOString();
-  const name = label || nextVersionName(versions().map((v) => v.label));
+  const existing = versions().map((v) => v.label);
+  const name = label || nextVersionName(existing);
+  if (rejectDuplicateName($<HTMLInputElement>("#vLabel")!, name, existing)) return;
   const ok = commit(
     (l) => {
       l.versions.push({ id, n, label: name, note: note || (app ? `Tailored for ${app.company}` : ""), content, createdAt: now });
@@ -880,7 +906,9 @@ function saveHeadline() {
   const cur = curHeadline();
   if (cur && cur.text === text) return announce(`Same as ${cur.label}.`);
   const n = (hlSorted().slice(-1)[0]?.n || 0) + 1;
-  const label = $<HTMLInputElement>("#hlLabel")!.value.trim() || nextVersionName(hlSorted().map((h) => h.label));
+  const existing = hlSorted().map((h) => h.label);
+  const label = $<HTMLInputElement>("#hlLabel")!.value.trim() || nextVersionName(existing);
+  if (rejectDuplicateName($<HTMLInputElement>("#hlLabel")!, label, existing)) return;
   const note = $<HTMLInputElement>("#hlNote")!.value.trim();
   const id = newId();
   const ok = commit(
@@ -1241,6 +1269,7 @@ document.addEventListener("keydown", (e) => {
 document.addEventListener("input", (e) => {
   const t = e.target as HTMLInputElement;
   if (t.getAttribute("aria-invalid") === "true" && t.value.trim() && t.closest("#appForm, #contactForm")) t.removeAttribute("aria-invalid");
+  if ((t.id === "vLabel" || t.id === "hlLabel") && t.getAttribute("aria-invalid") === "true") clearNameError(t);
   if (t.id === "hlEd") {
     pref.set(HL_DRAFT, t.value);
     const len = [...t.value.trim()].length;
