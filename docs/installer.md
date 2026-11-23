@@ -28,7 +28,7 @@ The app saves your data in the operating system's app-data folder, not inside th
 Because the build isn't signed with an Apple Developer certificate and hasn't been through Apple's notarization check, macOS treats a **downloaded** copy as coming from an unidentified developer.
 
 - **A copy you built yourself, on your own Mac, shows no warning.** macOS only flags files that were downloaded. This was checked: the copy installed from the `.dmg` built here had no download flag.
-- **A downloaded copy will be blocked the first time.** On macOS 15 (Sequoia) and later, Apple's guide gives these steps: try to open the app, then open **System Settings → Privacy & Security**, scroll to **Security**, choose **Open Anyway**, and enter your login password. The button stays available for about an hour after the attempt. After that, the app opens normally.
+- **A downloaded copy will be blocked the first time.** On macOS 15 (Sequoia) and later, Apple's guide gives these steps: try to open the app, then open **System Settings → Privacy & Security**, scroll to **Security**, choose **Open Anyway**, and enter your login password. The button stays available for about an hour after the attempt. After that, the app opens normally. This was seen on a Mac with a downloaded `1.1.0-rc.2` installer: macOS blocked it the first time, and it opened after **Open Anyway** was chosen in System Settings.
 - **The older right-click method is for older macOS.** Control-click then **Open** appears only in Apple's guide for earlier versions, not the one for macOS 15.
 
 Source: Apple, [Open a Mac app from an unknown developer](https://support.apple.com/guide/mac-help/open-a-mac-app-from-an-unknown-developer-mh40616/15.0/mac/15.0). The warning dialog itself has not been seen, so the exact wording on your Mac may differ. This will be tested with a real download once installers are published ([#12](https://github.com/natalia-builds/search-pipeline-tracker-app/issues/12), [#13](https://github.com/natalia-builds/search-pipeline-tracker-app/issues/13)).
@@ -92,7 +92,7 @@ To avoid touching real data, these checks started the app with Electron's `--use
 
 ## Known gaps
 
-- **Not tested:** a downloaded copy going through Gatekeeper (macOS's check), Intel Macs, running the Windows and Linux installers on Windows and Linux, and macOS versions other than 26.7.
+- **Not tested:** Intel Macs, running the Windows and Linux installers on Windows and Linux, and macOS versions other than 26.7.
 - **The icon was only seen on macOS.** The maintainer looked at it there on 2026-11-21 and it looked good, but exactly which views (Finder, the Dock, the `.dmg` window) wasn't recorded, and no screenshots were taken. On Windows and Linux it is only known that the `v1.0.0` build used the same image without errors. Nobody has seen it on those systems.
 - **No updates.** To update, build or download the new installer and replace the app. Your data is kept.
 - **Ad-hoc signing and library validation.** electron-builder warns that an ad-hoc signature with the hardened runtime can stop an app launching unless an entitlement is added. It launched fine here. If a future macOS blocks it, that entitlement is the first thing to look at.
