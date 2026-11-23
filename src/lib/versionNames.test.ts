@@ -1,5 +1,32 @@
 import { describe, expect, it } from "vitest";
-import { nextVersionName } from "./versionNames";
+import { isNameTaken, nextVersionName } from "./versionNames";
+
+describe("isNameTaken", () => {
+  it("finds a name that is already used", () => {
+    expect(isNameTaken(["v1", "v2"], "v2")).toBe(true);
+    expect(isNameTaken(["Google tailored"], "Google tailored")).toBe(true);
+  });
+  it("accepts a name that isn't used", () => {
+    expect(isNameTaken(["v1", "v2"], "v3")).toBe(false);
+    expect(isNameTaken([], "v1")).toBe(false);
+  });
+  it("ignores upper and lower case", () => {
+    expect(isNameTaken(["v2"], "V2")).toBe(true);
+    expect(isNameTaken(["Google Tailored"], "google tailored")).toBe(true);
+  });
+  it("ignores spaces around the name", () => {
+    expect(isNameTaken(["v2"], "  v2 ")).toBe(true);
+    expect(isNameTaken([" v2 "], "v2")).toBe(true);
+  });
+  it("treats different text as different names", () => {
+    expect(isNameTaken(["v2"], "v 2")).toBe(false);
+    expect(isNameTaken(["v2"], "v22")).toBe(false);
+  });
+  it("never counts an empty name as taken, because empty means use the suggestion", () => {
+    expect(isNameTaken(["", "v1"], "")).toBe(false);
+    expect(isNameTaken(["v1"], "   ")).toBe(false);
+  });
+});
 
 describe("nextVersionName", () => {
   it("starts at v1 when nothing is saved", () => {

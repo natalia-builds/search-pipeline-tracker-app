@@ -212,6 +212,7 @@ textarea#hlEd { width: 100%; min-height: 96px; resize: vertical; padding: 12px; 
 .panel { justify-items: stretch; }
 .settings .field { display: grid; gap: 4px; max-width: 640px; }
 .field-error { margin: 0; color: var(--fail); font-weight: 500; font-size: 14px; }
+.field-error:empty { display: none; }
 
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; scroll-behavior: auto !important; } }
 @media (forced-colors: active) { .dot { forced-color-adjust: none; } .mtab[aria-current="page"], .tab[aria-current="true"] { text-decoration: underline; } }

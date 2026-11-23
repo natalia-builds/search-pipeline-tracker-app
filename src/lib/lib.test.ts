@@ -139,6 +139,26 @@ describe("storage and backups", () => {
     const lib = sampleLibrary(new Date("2026-03-01T12:00:00Z"));
     expect(parseBackup(exportBackup(lib))).toEqual(lib);
   });
+  it("restores a backup that already has duplicate version names, unchanged", () => {
+    // Older data could hold two versions or headlines with the same name. The new-name check
+    // only applies when saving, so restoring must keep all of them and their names as they were.
+    const lib = emptyLibrary();
+    const at = "2026-03-01T12:00:00.000Z";
+    lib.versions = [
+      { id: "a", n: 1, label: "v1", note: "", content: "first", createdAt: at },
+      { id: "b", n: 2, label: "v1", note: "", content: "second", createdAt: at },
+    ];
+    lib.currentVersion = "b";
+    lib.headlines = [
+      { id: "h1", n: 1, label: "v1", text: "one", note: "", createdAt: at },
+      { id: "h2", n: 2, label: "V1", text: "two", note: "", createdAt: at },
+    ];
+    lib.currentHeadline = "h2";
+    const restored = parseBackup(exportBackup(lib));
+    expect(restored.versions.map((v) => v.label)).toEqual(["v1", "v1"]);
+    expect(restored.headlines.map((h) => h.label)).toEqual(["v1", "V1"]);
+    expect(restored).toEqual(lib);
+  });
   it("keeps every application stage through a backup, and older backups still load", () => {
     const lib = emptyLibrary();
     const template = sampleLibrary(new Date("2026-03-01T12:00:00Z")).applications[0];
