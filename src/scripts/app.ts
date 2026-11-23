@@ -116,7 +116,7 @@ function commit(change: (l: Library) => void, message?: string) {
   const err = saveLibrary(store, next);
   if (err) {
     S.saveError = err;
-    announce(err + " Download a backup so you don't lose your work.");
+    announce(err + " Download a backup so you don't lose your work.", "error");
     render();
     return false;
   }
@@ -128,7 +128,7 @@ function commit(change: (l: Library) => void, message?: string) {
 // The server saves in the background. If that fails, say so; when a later save works, clear the warning.
 saveEvents.error = (m) => {
   S.saveError = m;
-  announce(m);
+  announce(m, "error");
   render();
 };
 saveEvents.saved = () => {
@@ -156,15 +156,29 @@ const DRAFT = "draft.resume";
 const HL_DRAFT = "draft.headline";
 
 /* ---------- announcements ---------- */
+// Two live regions, both in the page from the start. Successes and progress go to #status (polite:
+// read when the screen reader is idle). Problems go to #alert (role="alert": read at once) with a
+// leading "Problem:" so the meaning does not depend on color. "alert-only" is for a problem that is
+// already shown next to its field: screen readers hear it, but the line is hidden so it isn't shown twice.
+type AnnounceKind = "status" | "error" | "alert-only";
 let announceTimer: number | undefined;
-function announce(msg: string) {
-  const el = $("#status");
-  if (!el) return;
-  el.textContent = "";
+function announce(msg: string, kind: AnnounceKind = "status") {
+  const status = $("#status");
+  const alert = $("#alert");
+  if (!status || !alert) return;
+  const isProblem = kind !== "status";
+  const el = isProblem ? alert : status;
+  // Only one message shows at a time.
+  status.textContent = "";
+  alert.textContent = "";
+  alert.classList.toggle("sr-only", kind === "alert-only");
   // A short pause makes screen readers read the same message again if it repeats.
-  window.setTimeout(() => (el.textContent = msg), 30);
+  window.setTimeout(() => (el.textContent = isProblem ? "Problem: " + msg : msg), 30);
   window.clearTimeout(announceTimer);
-  announceTimer = window.setTimeout(() => (el.textContent = ""), 8000);
+  announceTimer = window.setTimeout(() => {
+    status.textContent = "";
+    alert.textContent = "";
+  }, isProblem ? 15000 : 8000);
 }
 
 /* ---------- version names ---------- */
@@ -180,7 +194,8 @@ function rejectDuplicateName(input: HTMLInputElement, name: string, existingName
   input.select();
   // Focusing brings the box into view; make sure its message, just below, is in view as well.
   error?.scrollIntoView({ block: "nearest" });
-  announce(message);
+  // The box already shows the message in red, so the alert region only tells screen readers.
+  announce(message, "alert-only");
   return true;
 }
 
@@ -781,7 +796,7 @@ async function copyText(text: string) {
     await navigator.clipboard.writeText(text);
     announce("Copied.");
   } catch {
-    announce("Copying didn't work in this browser. Select the text and copy it instead.");
+    announce("Copying didn't work in this browser. Select the text and copy it instead.", "error");
   }
 }
 
@@ -813,18 +828,19 @@ async function downloadPdf(btn: HTMLButtonElement, vid: string) {
     const res = await makeResumePdf(v.content, limit, BASE);
     const name = (lib.settings.name || "Resume").replace(/[\\/:*?"<>|]/g, "");
     download(res.blob, `${name} Resume ${v.label.replace(/[\\/:*?"<>|]/g, "")}.pdf`);
-    announce(
-      res.fit
-        ? `PDF downloaded (${pages(res.pages)}).`
-        : `Too long for ${pages(limit)} at a readable size, so the PDF is ${pages(res.pages)}. Trim a bullet or two, or raise the page limit, and try again.`,
-    );
+    if (res.fit) announce(`PDF downloaded (${pages(res.pages)}).`);
+    else
+      announce(
+        `Too long for ${pages(limit)} at a readable size, so the PDF is ${pages(res.pages)}. Trim a bullet or two, or raise the page limit, and try again.`,
+        "error",
+      );
   } catch (err) {
     if (isStalePageError(err)) {
       // Not a real PDF problem: the app was updated after this page opened. Reloading fixes it.
       S.outOfDate = true;
-      announce(STALE_PAGE_MESSAGE);
+      announce(STALE_PAGE_MESSAGE, "error");
       render('[data-act="reload"]');
-    } else announce("Couldn't build the PDF: " + (err as Error).message);
+    } else announce("Couldn't build the PDF: " + (err as Error).message, "error");
   } finally {
     btn.disabled = false;
   }
@@ -833,12 +849,12 @@ async function downloadPdf(btn: HTMLButtonElement, vid: string) {
 function saveVersion() {
   const content = $<HTMLTextAreaElement>("#ed")!.value;
   const blocker = resumeSaveBlocker(content, current()?.content ?? null);
-  if (blocker === "empty") return announce("Paste your resume first.");
+  if (blocker === "empty") return announce("Paste your resume first.", "error");
   const label = $<HTMLInputElement>("#vLabel")!.value.trim();
   const note = $<HTMLInputElement>("#vNote")!.value.trim();
   const app = lib.applications.find((a) => a.id === $<HTMLSelectElement>("#vApp")!.value);
   const cur = current();
-  if (blocker === "unchanged" && cur) return announce(`No changes since ${cur.label}.`);
+  if (blocker === "unchanged" && cur) return announce(`No changes since ${cur.label}.`, "error");
   const n = (versions().slice(-1)[0]?.n || 0) + 1;
   const id = newId();
   const now = new Date().toISOString();
@@ -887,7 +903,7 @@ function saveApp(form: HTMLFormElement) {
     const el = form.querySelector<HTMLInputElement>("#" + missing)!;
     el.setAttribute("aria-invalid", "true");
     el.focus();
-    return announce(`Add a ${missing === "fCompany" ? "company" : "role"} first.`);
+    return announce(`Add a ${missing === "fCompany" ? "company" : "role"} first.`, "error");
   }
   const id = form.dataset.id!;
   const isNew = id === "new";
@@ -910,7 +926,7 @@ function saveContact(form: HTMLFormElement) {
     const el = form.querySelector<HTMLInputElement>("#cName")!;
     el.setAttribute("aria-invalid", "true");
     el.focus();
-    return announce("Add a name first.");
+    return announce("Add a name first.", "error");
   }
   const id = form.dataset.id!;
   const isNew = id === "new";
@@ -930,7 +946,7 @@ function logShare(form: HTMLFormElement) {
   const cid = form.dataset.id!;
   const c = lib.contacts.find((x) => x.id === cid);
   const versionId = form.querySelector<HTMLSelectElement>("#sVersion")!.value;
-  if (!c || !versionId) return announce("Save a resume version first.");
+  if (!c || !versionId) return announce("Save a resume version first.", "error");
   const entry = { id: newId(), versionId, date: form.querySelector<HTMLInputElement>("#sDate")!.value || today(), note: form.querySelector<HTMLInputElement>("#sNote")!.value.trim() };
   const ok = commit((l) => {
     const x = l.contacts.find((y) => y.id === cid)!;
@@ -947,8 +963,8 @@ function saveHeadline() {
   const text = normalizeHeadline($<HTMLTextAreaElement>("#hlEd")!.value || "");
   const cur = curHeadline();
   const blocker = headlineSaveBlocker(text, cur ? cur.text : null);
-  if (blocker === "empty") return announce("Add the headline text first.");
-  if (blocker === "unchanged" && cur) return announce(`Same as ${cur.label}.`);
+  if (blocker === "empty") return announce("Add the headline text first.", "error");
+  if (blocker === "unchanged" && cur) return announce(`Same as ${cur.label}.`, "error");
   const n = (hlSorted().slice(-1)[0]?.n || 0) + 1;
   const existing = hlSorted().map((h) => h.label);
   const label = $<HTMLInputElement>("#hlLabel")!.value.trim() || nextVersionName(existing);
@@ -1091,7 +1107,7 @@ function handleAction(el: HTMLElement) {
       return render(was && was !== "new" ? `[data-act="editc"][data-id="${CSS.escape(was)}"]` : '[data-act="newc"]');
     }
     case "shareto":
-      if (!versions().length) return announce("Save a resume version first, then you can log who you shared it with.");
+      if (!versions().length) return announce("Save a resume version first, then you can log who you shared it with.", "error");
       S.shareFor = S.shareFor === id ? null : id;
       S.editingC = null;
       return render(S.shareFor ? "#sVersion" : undefined);
@@ -1277,7 +1293,7 @@ document.addEventListener("change", (e) => {
         S.pendingRestore = restored;
         render('[data-act="restoreyes"]');
       })
-      .catch((err: Error) => announce(err.message));
+      .catch((err: Error) => announce(err.message, "error"));
     t.value = "";
   }
 });
