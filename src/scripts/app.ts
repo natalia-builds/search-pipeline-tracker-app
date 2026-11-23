@@ -177,6 +177,8 @@ function rejectDuplicateName(input: HTMLInputElement, name: string, existingName
   input.setAttribute("aria-invalid", "true");
   input.focus();
   input.select();
+  // Focusing brings the box into view; make sure its message, just below, is in view as well.
+  error?.scrollIntoView({ block: "nearest" });
   announce(message);
   return true;
 }
@@ -356,13 +358,15 @@ function resumeHtml() {
         ${formatHelpHtml(S.helpOpen ?? !cur)}
         <p class="hint" id="edHint">In the editor, the Tab key types a tab. To leave the editor, press Esc and then Tab, or press Shift+Tab.</p>
         <textarea id="ed" spellcheck="true" aria-describedby="edHint">${esc(text)}</textarea>
-        <div class="savebar">
+        <div class="namebar">
           <label>Version name<input class="f" id="vLabel" value="${esc(nextName)}" aria-describedby="vLabel-err"></label>
+          <p class="field-error" id="vLabel-err"></p>
+        </div>
+        <div class="savebar">
           <label>What changed?<input class="f" id="vNote" placeholder="e.g. Led with payments results"></label>
           <label>Tailored for<select class="f" id="vApp"><option value="">Not tied to an application</option>${openApps.map((a) => `<option value="${esc(a.id)}">${esc(a.company)} - ${esc(a.role)}</option>`).join("")}</select></label>
           <button class="btn primary" data-act="savev">Save version</button>
         </div>
-        <p class="field-error" id="vLabel-err"></p>
       </div><div id="liveSide">${sideHtml(text)}</div></div>`;
   } else if (S.tab === "history" && cur) {
     body = `<div class="hist">${vs
@@ -562,11 +566,13 @@ function headlineHtml() {
       <label for="hlEd" class="field-label">Headline</label>
       <textarea id="hlEd" maxlength="400" aria-describedby="hlCount">${esc(text)}</textarea>
       <div class="bar"><span class="count${len > HEADLINE_MAX ? " over" : ""}" id="hlCount">${len} of ${HEADLINE_MAX} characters</span></div>
-      <div class="savebar three">
+      <div class="namebar">
         <label>Version name<input class="f" id="hlLabel" value="${esc(nextVersionName(hs.map((h) => h.label)))}" aria-describedby="hlLabel-err"></label>
+        <p class="field-error" id="hlLabel-err"></p>
+      </div>
+      <div class="savebar three">
         <label>Why the change?<input class="f" id="hlNote" placeholder="e.g. Lead with payments for fintech roles"></label>
         <button class="btn primary" data-act="hlsave">Save version</button></div>
-      <p class="field-error" id="hlLabel-err"></p>
     </div><div id="hlSide" class="side">${checksCard(hlChecks(text))}</div></div>`;
   }
   if (!cur) return head + editor + (S.hlEditing ? "" : `<div class="empty-state"><h3>No headline saved yet</h3><p>Paste your current LinkedIn headline as v1, then save a new version each time you change it.</p><button class="btn primary" data-act="hlnew">Add your headline</button></div>`);
