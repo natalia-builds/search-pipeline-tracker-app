@@ -6,6 +6,7 @@ import { boldedMetrics, bulletCount, esc, plain, renderMarkdown, wordCount } fro
 import { sampleLibrary } from "../lib/sample";
 import { openServerStore } from "../lib/serverStore";
 import { isStalePageError, STALE_PAGE_MESSAGE } from "../lib/stale";
+import { headlineSaveBlocker, normalizeHeadline, resumeSaveBlocker, type SaveBlocker } from "../lib/saveRules";
 import { isNameTaken, nextVersionName } from "../lib/versionNames";
 import { backupFilename, exportBackup, loadLibrary, parseBackup, saveLibrary, STORAGE_KEY, type KeyValueStore } from "../lib/storage";
 import { BONUS_OPTIONS, emptyLibrary, isActive, MAX_PAGE_LIMIT, STATUSES, type Application, type Contact, type Library, type Settings } from "../lib/types";
@@ -190,6 +191,37 @@ function clearNameError(input: HTMLInputElement) {
   if (error) error.textContent = "";
 }
 
+/* ---------- when "Save version" is available ---------- */
+// The button is turned off with aria-disabled, not the disabled attribute, so it can still be
+// reached with the Tab key and read out as unavailable. A line beside it says why.
+function resumeSaveReason(blocker: SaveBlocker, cur: { label: string } | null): string {
+  if (blocker === "empty") return "Paste your resume to save a version.";
+  if (blocker === "unchanged") return `No changes since ${cur ? cur.label : "the current version"}. Change the text to save a new version.`;
+  return "";
+}
+function headlineSaveReason(blocker: SaveBlocker, cur: { label: string } | null): string {
+  if (blocker === "empty") return "Add your headline to save a version.";
+  if (blocker === "unchanged") return `Same as ${cur ? cur.label : "the current headline"}. Change the text to save a new version.`;
+  return "";
+}
+function setSaveButton(buttonSelector: string, hintId: string, reason: string) {
+  const button = $(buttonSelector);
+  if (button) {
+    if (reason) button.setAttribute("aria-disabled", "true");
+    else button.removeAttribute("aria-disabled");
+  }
+  const hint = document.getElementById(hintId);
+  if (hint) hint.textContent = reason;
+}
+function updateResumeSave(text: string) {
+  const cur = current();
+  setSaveButton('[data-act="savev"]', "vSaveHint", resumeSaveReason(resumeSaveBlocker(text, cur ? cur.content : null), cur));
+}
+function updateHeadlineSave(rawText: string) {
+  const cur = curHeadline();
+  setSaveButton('[data-act="hlsave"]', "hlSaveHint", headlineSaveReason(headlineSaveBlocker(rawText, cur ? cur.text : null), cur));
+}
+
 /* ---------- shared pieces ---------- */
 const LEVEL_WORD = { ok: "Passed", warn: "Check", fail: "Problem" };
 const checksCard = (list: Check[], title = "Checks") =>
@@ -351,6 +383,7 @@ function resumeHtml() {
     const draft = pref.get(DRAFT);
     const text = draft ?? (cur ? cur.content : "");
     const nextName = nextVersionName(vs.map((v) => v.label));
+    const saveReason = resumeSaveReason(resumeSaveBlocker(text, cur ? cur.content : null), cur);
     const openApps = lib.applications.filter((a) => isActive(a.status));
     body = `<div class="cols"><div class="editor">
         ${draft != null && cur && draft !== cur.content ? `<div class="banner"><span>Unsaved draft based on ${esc(cur.label)}. Drafts stay in this browser until you save a version.</span><button class="btn small" data-act="discard">Discard draft</button></div>` : ""}
@@ -365,8 +398,9 @@ function resumeHtml() {
         <div class="savebar">
           <label>What changed?<input class="f" id="vNote" placeholder="e.g. Led with payments results"></label>
           <label>Tailored for<select class="f" id="vApp"><option value="">Not tied to an application</option>${openApps.map((a) => `<option value="${esc(a.id)}">${esc(a.company)} - ${esc(a.role)}</option>`).join("")}</select></label>
-          <button class="btn primary" data-act="savev">Save version</button>
+          <button class="btn primary" data-act="savev" aria-describedby="vSaveHint"${saveReason ? ' aria-disabled="true"' : ""}>Save version</button>
         </div>
+        <p class="hint save-hint" id="vSaveHint">${esc(saveReason)}</p>
       </div><div id="liveSide">${sideHtml(text)}</div></div>`;
   } else if (S.tab === "history" && cur) {
     body = `<div class="hist">${vs
@@ -562,6 +596,7 @@ function headlineHtml() {
   if (S.hlEditing) {
     const text = pref.get(HL_DRAFT) ?? (cur ? cur.text : "");
     const len = [...text].length;
+    const saveReason = headlineSaveReason(headlineSaveBlocker(text, cur ? cur.text : null), cur);
     editor = `<div class="cols"><div class="editor">
       <label for="hlEd" class="field-label">Headline</label>
       <textarea id="hlEd" maxlength="400" aria-describedby="hlCount">${esc(text)}</textarea>
@@ -572,7 +607,8 @@ function headlineHtml() {
       </div>
       <div class="savebar three">
         <label>Why the change?<input class="f" id="hlNote" placeholder="e.g. Lead with payments for fintech roles"></label>
-        <button class="btn primary" data-act="hlsave">Save version</button></div>
+        <button class="btn primary" data-act="hlsave" aria-describedby="hlSaveHint"${saveReason ? ' aria-disabled="true"' : ""}>Save version</button></div>
+      <p class="hint save-hint" id="hlSaveHint">${esc(saveReason)}</p>
     </div><div id="hlSide" class="side">${checksCard(hlChecks(text))}</div></div>`;
   }
   if (!cur) return head + editor + (S.hlEditing ? "" : `<div class="empty-state"><h3>No headline saved yet</h3><p>Paste your current LinkedIn headline as v1, then save a new version each time you change it.</p><button class="btn primary" data-act="hlnew">Add your headline</button></div>`);
@@ -796,12 +832,13 @@ async function downloadPdf(btn: HTMLButtonElement, vid: string) {
 
 function saveVersion() {
   const content = $<HTMLTextAreaElement>("#ed")!.value;
-  if (!content.trim()) return announce("Paste your resume first.");
+  const blocker = resumeSaveBlocker(content, current()?.content ?? null);
+  if (blocker === "empty") return announce("Paste your resume first.");
   const label = $<HTMLInputElement>("#vLabel")!.value.trim();
   const note = $<HTMLInputElement>("#vNote")!.value.trim();
   const app = lib.applications.find((a) => a.id === $<HTMLSelectElement>("#vApp")!.value);
   const cur = current();
-  if (cur && cur.content === content) return announce(`No changes since ${cur.label}.`);
+  if (blocker === "unchanged" && cur) return announce(`No changes since ${cur.label}.`);
   const n = (versions().slice(-1)[0]?.n || 0) + 1;
   const id = newId();
   const now = new Date().toISOString();
@@ -907,10 +944,11 @@ function logShare(form: HTMLFormElement) {
 }
 
 function saveHeadline() {
-  const text = ($<HTMLTextAreaElement>("#hlEd")!.value || "").trim().replace(/\s+/g, " ");
-  if (!text) return announce("Add the headline text first.");
+  const text = normalizeHeadline($<HTMLTextAreaElement>("#hlEd")!.value || "");
   const cur = curHeadline();
-  if (cur && cur.text === text) return announce(`Same as ${cur.label}.`);
+  const blocker = headlineSaveBlocker(text, cur ? cur.text : null);
+  if (blocker === "empty") return announce("Add the headline text first.");
+  if (blocker === "unchanged" && cur) return announce(`Same as ${cur.label}.`);
   const n = (hlSorted().slice(-1)[0]?.n || 0) + 1;
   const existing = hlSorted().map((h) => h.label);
   const label = $<HTMLInputElement>("#hlLabel")!.value.trim() || nextVersionName(existing);
@@ -1278,6 +1316,7 @@ document.addEventListener("input", (e) => {
   if ((t.id === "vLabel" || t.id === "hlLabel") && t.getAttribute("aria-invalid") === "true") clearNameError(t);
   if (t.id === "hlEd") {
     pref.set(HL_DRAFT, t.value);
+    updateHeadlineSave(t.value);
     const len = [...t.value.trim()].length;
     const c = $("#hlCount");
     if (c) {
@@ -1297,6 +1336,7 @@ document.addEventListener("input", (e) => {
   }
   if (t.id === "ed") {
     pref.set(DRAFT, t.value);
+    updateResumeSave(t.value);
     window.clearTimeout(sideTimer);
     sideTimer = window.setTimeout(() => {
       const side = $("#liveSide");
